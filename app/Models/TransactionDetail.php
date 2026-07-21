@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['transaction_id', 'product_id', 'price', 'quantity', 'subtotal'])]
+#[Fillable(['transaction_id', 'product_id', 'custom_name', 'price', 'quantity', 'subtotal'])]
 class TransactionDetail extends Model
 {
     public function transaction(): BelongsTo

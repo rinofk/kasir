@@ -40,7 +40,7 @@
         <div style="margin-bottom: 8px;">
             @foreach($transaction->details as $detail)
                 <div class="receipt-item-row">
-                    <span style="font-weight: 600; width: 65%;">{{ $detail->product->name }}</span>
+                    <span style="font-weight: 600; width: 65%;">{{ $detail->product_id ? $detail->product->name : $detail->custom_name }}</span>
                     <span style="width: 35%; text-align: right;">{{ $detail->quantity }}x {{ number_format($detail->price, 0, ',', '.') }}</span>
                 </div>
                 <div style="font-size: 11px; text-align: right; margin-bottom: 6px; padding-right: 2px;">

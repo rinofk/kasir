@@ -32,9 +32,9 @@
                         <tbody>
                             @foreach($transaction->details as $detail)
                                 <tr>
-                                    <td><code>{{ $detail->product->code ?? 'N/A' }}</code></td>
-                                    <td><strong>{{ $detail->product->name ?? 'Produk Telah Dihapus' }}</strong></td>
-                                    <td>{{ $detail->product->category->name ?? 'N/A' }}</td>
+                                    <td><code>{{ $detail->product_id ? ($detail->product->code ?? 'N/A') : 'MANUAL' }}</code></td>
+                                    <td><strong>{{ $detail->product_id ? ($detail->product->name ?? 'Produk Telah Dihapus') : $detail->custom_name }}</strong></td>
+                                    <td>{{ $detail->product_id ? ($detail->product->category->name ?? 'N/A') : 'Manual' }}</td>
                                     <td style="text-align: right;">Rp {{ number_format($detail->price, 0, ',', '.') }}</td>
                                     <td style="text-align: center;">{{ $detail->quantity }}</td>
                                     <td style="text-align: right;"><strong>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</strong></td>

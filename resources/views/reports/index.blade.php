@@ -94,7 +94,7 @@
                                 <td>
                                     <div style="font-size: 13px; color: var(--text-secondary); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                         @foreach($tx->details as $d)
-                                            {{ $d->product->name ?? 'Produk Dihapus' }} ({{ $d->quantity }}x),
+                                            {{ $d->product_id ? ($d->product->name ?? 'Produk Dihapus') : $d->custom_name }} ({{ $d->quantity }}x),
                                         @endforeach
                                     </div>
                                 </td>

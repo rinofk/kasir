@@ -24,8 +24,10 @@ class PosController extends Controller
     {
         $request->validate([
             'cart' => 'required|array|min:1',
-            'cart.*.id' => 'required|exists:products,id',
+            'cart.*.id' => 'required|string',
             'cart.*.qty' => 'required|integer|min:1',
+            'cart.*.name' => 'nullable|string',
+            'cart.*.price' => 'nullable|numeric|min:0',
             'payment_amount' => 'required|numeric|min:0',
         ]);
 
@@ -38,24 +40,45 @@ class PosController extends Controller
 
                 // 1. Process items and validate stock
                 foreach ($cart as $item) {
-                    $product = Product::lockForUpdate()->find($item['id']);
+                    $isManual = str_starts_with((string) $item['id'], 'manual_');
 
-                    if ($product->stock < $item['qty']) {
-                        throw new \Exception("Stok produk '{$product->name}' tidak mencukupi. Sisa stok: {$product->stock}");
+                    if ($isManual) {
+                        $customName = $item['name'] ?? 'Barang Manual';
+                        $customPrice = (float) ($item['price'] ?? 0);
+                        $subtotal = $customPrice * $item['qty'];
+                        $totalPrice += $subtotal;
+
+                        $detailsData[] = [
+                            'product_id' => null,
+                            'custom_name' => $customName,
+                            'price' => $customPrice,
+                            'quantity' => $item['qty'],
+                            'subtotal' => $subtotal,
+                        ];
+                    } else {
+                        $product = Product::lockForUpdate()->find($item['id']);
+                        if (!$product) {
+                            throw new \Exception("Produk dengan ID {$item['id']} tidak ditemukan.");
+                        }
+
+                        if ($product->stock < $item['qty']) {
+                            throw new \Exception("Stok produk '{$product->name}' tidak mencukupi. Sisa stok: {$product->stock}");
+                        }
+
+                        $subtotal = $product->selling_price * $item['qty'];
+                        $totalPrice += $subtotal;
+
+                        // Decrement stock
+                        $product->decrement('stock', $item['qty']);
+
+                        $detailsData[] = [
+                            'product_id' => $product->id,
+                            'custom_name' => null,
+                            'price' => $product->selling_price,
+                            'quantity' => $item['qty'],
+                            'subtotal' => $subtotal,
+                        ];
                     }
-
-                    $subtotal = $product->selling_price * $item['qty'];
-                    $totalPrice += $subtotal;
-
-                    // Decrement stock
-                    $product->decrement('stock', $item['qty']);
-
-                    $detailsData[] = [
-                        'product_id' => $product->id,
-                        'price' => $product->selling_price,
-                        'quantity' => $item['qty'],
-                        'subtotal' => $subtotal,
-                    ];
                 }
 
                 // 2. Validate payment amount

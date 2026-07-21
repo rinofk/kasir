@@ -10,9 +10,12 @@
         <div class="pos-catalog">
             
             <!-- Search Bar (Focus target for barcode scanner) -->
-            <div class="catalog-search-bar">
+            <div class="catalog-search-bar" style="display: flex; gap: 8px; width: 100%;">
                 <input type="text" id="productSearch" class="form-control" placeholder="Arahkan kursor ke sini & scan barcode..." style="flex-grow: 1; font-size: 16px; padding: 12px 16px;" autofocus>
-                <button type="button" id="clearSearch" class="btn btn-secondary" style="padding: 10px 14px;"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" id="clearSearch" class="btn btn-secondary" style="padding: 10px 14px;" title="Bersihkan"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="openManualItemModal()" class="btn btn-secondary" style="padding: 10px 14px; display: flex; align-items: center; gap: 6px; white-space: nowrap;" title="Tambah Barang Manual">
+                    <i class="fa-solid fa-keyboard"></i> <span>Barang Manual</span>
+                </button>
             </div>
 
             <!-- Scanner Guide Visual -->
@@ -140,6 +143,36 @@
                     <button type="button" onclick="closeCameraScanner()" class="btn btn-secondary" style="width: 100%; padding: 12px;">Tutup Kamera</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Manual Item Modal -->
+    <div id="manualItemModal" class="modal">
+        <div class="modal-content" style="max-width: 450px; padding: 20px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fa-solid fa-keyboard"></i> Tambah Barang Manual</h3>
+                <button type="button" onclick="closeManualItemModal()" class="modal-close">&times;</button>
+            </div>
+            <form id="manualItemForm" onsubmit="addManualItemToCart(event)">
+                <div class="modal-body" style="padding: 16px 0 0 0;">
+                    <div class="form-group">
+                        <label for="manual_name" class="form-label">Nama Barang</label>
+                        <input type="text" id="manual_name" class="form-control" required placeholder="Contoh: Roti Tawar Nining" value="Barang Manual">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_price" class="form-label">Harga Jual (Rp)</label>
+                        <input type="text" id="manual_price" inputmode="numeric" class="form-control" required placeholder="Masukkan harga jual..." style="font-weight: bold; font-size: 16px;">
+                    </div>
+                    <div class="form-group">
+                        <label for="manual_qty" class="form-label">Jumlah (Qty)</label>
+                        <input type="number" id="manual_qty" class="form-control" required min="1" value="1">
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding: 16px 0 0 0; display: flex; justify-content: flex-end; gap: 8px;">
+                    <button type="button" onclick="closeManualItemModal()" class="btn btn-secondary">Batal</button>
+                    <button type="submit" class="btn btn-primary">Masukkan Keranjang</button>
+                </div>
+            </form>
         </div>
     </div>
 @endsection
@@ -332,7 +365,8 @@
             if (newQty <= 0) {
                 cart.splice(itemIndex, 1);
             } else {
-                if (newQty > item.stock) {
+                const isManual = typeof item.id === 'string' && item.id.startsWith('manual_');
+                if (!isManual && newQty > item.stock) {
                     alert(`Stok tidak mencukupi. Sisa stok: ${item.stock}`);
                     return;
                 }
@@ -459,7 +493,12 @@
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({
-                    cart: cart.map(item => ({ id: item.id, qty: item.qty })),
+                    cart: cart.map(item => ({ 
+                        id: item.id, 
+                        qty: item.qty,
+                        name: item.name,
+                        price: item.price
+                    })),
                     payment_amount: cash
                 })
             })
@@ -599,5 +638,67 @@
                 }
             });
         }
+
+        // Manual Items Support
+        function openManualItemModal() {
+            document.getElementById('manual_name').value = 'Barang Manual';
+            document.getElementById('manual_price').value = '';
+            document.getElementById('manual_qty').value = '1';
+            document.getElementById('manualItemModal').classList.add('active');
+            
+            setTimeout(() => {
+                document.getElementById('manual_price').focus();
+            }, 100);
+        }
+
+        function closeManualItemModal() {
+            document.getElementById('manualItemModal').classList.remove('active');
+        }
+
+        function addManualItemToCart(e) {
+            e.preventDefault();
+            const name = document.getElementById('manual_name').value.trim() || 'Barang Manual';
+            const priceVal = document.getElementById('manual_price').value.replace(/[^0-9]/g, '');
+            const price = parseFloat(priceVal) || 0;
+            const qty = parseInt(document.getElementById('manual_qty').value) || 1;
+
+            if (price <= 0) {
+                alert("Harga barang harus lebih besar dari 0.");
+                return;
+            }
+
+            const id = 'manual_' + Date.now();
+            
+            cart.push({
+                id: id,
+                code: 'MANUAL',
+                name: name,
+                price: price,
+                qty: qty,
+                stock: 999999
+            });
+
+            renderCart();
+            closeManualItemModal();
+            
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `Ditambahkan: ${name}`,
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
+        }
+
+        document.getElementById('manual_price').addEventListener('input', function() {
+            let cleanVal = this.value.replace(/[^0-9]/g, '');
+            if (cleanVal !== '') {
+                this.value = parseInt(cleanVal).toLocaleString('id-ID');
+            } else {
+                this.value = '';
+            }
+        });
     </script>
 @endsection
