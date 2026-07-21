@@ -470,6 +470,13 @@
             calculateChange(total);
         });
 
+        paymentAmountInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !btnCheckout.disabled) {
+                e.preventDefault();
+                btnCheckout.click();
+            }
+        });
+
         btnCheckout.addEventListener('click', function() {
             if (cart.length === 0) return;
 
@@ -486,15 +493,27 @@
             btnCheckout.disabled = true;
             btnCheckout.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 
+            // Get CSRF token - try meta tag first, then cookie
+            function getCsrfToken() {
+                const metaTag = document.querySelector('meta[name="csrf-token"]');
+                if (metaTag) return metaTag.getAttribute('content');
+                // Fallback: read XSRF-TOKEN cookie
+                const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+                return match ? decodeURIComponent(match[1]) : '';
+            }
+
             fetch('/pos', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'X-XSRF-TOKEN': (document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1] ? decodeURIComponent((document.cookie.match(/XSRF-TOKEN=([^;]+)/) || [])[1]) : '',
                 },
                 body: JSON.stringify({
+                    _token: getCsrfToken(),
                     cart: cart.map(item => ({ 
-                        id: item.id, 
+                        id: String(item.id), 
                         qty: item.qty,
                         name: item.name,
                         price: item.price
@@ -502,12 +521,23 @@
                     payment_amount: cash
                 })
             })
-            .then(response => response.json().then(data => ({ status: response.status, body: data })))
-            .then(res => {
+            .then(async response => {
+                const contentType = response.headers.get('content-type') || '';
+                let data;
+                if (contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const text = await response.text();
+                    // Extract a short snippet from potential HTML error page
+                    const match = text.match(/<title>(.*?)<\/title>/i) || text.match(/Error: (.+?)\n/);
+                    const msg = match ? match[1] : `Server error (HTTP ${response.status}). Periksa log server.`;
+                    data = { success: false, message: msg };
+                }
+
                 btnCheckout.disabled = false;
                 btnCheckout.innerHTML = '<i class="fa-solid fa-cash-register"></i> &nbsp; Bayar Sekarang & Selesaikan';
 
-                if (res.status === 200 && res.body.success) {
+                if (response.ok && data.success) {
                     cart.forEach(item => {
                         const card = document.querySelector(`.product-card[data-id="${item.id}"]`);
                         if (card) {
@@ -525,25 +555,35 @@
                         }
                     });
 
-                    document.getElementById('successInvoiceNum').textContent = res.body.invoice_number;
-                    document.getElementById('successTotal').textContent = formatRupiah(res.body.total_price);
-                    document.getElementById('successPayment').textContent = formatRupiah(res.body.payment_amount);
-                    document.getElementById('successChange').textContent = formatRupiah(res.body.change_amount);
-                    document.getElementById('btnPrintReceipt').href = `/pos/receipt/${res.body.transaction_id}`;
+                    document.getElementById('successInvoiceNum').textContent = data.invoice_number;
+                    document.getElementById('successTotal').textContent = formatRupiah(data.total_price);
+                    document.getElementById('successPayment').textContent = formatRupiah(data.payment_amount);
+                    document.getElementById('successChange').textContent = formatRupiah(data.change_amount);
+                    document.getElementById('btnPrintReceipt').href = `/pos/receipt/${data.transaction_id}`;
 
                     document.getElementById('checkoutSuccessModal').classList.add('active');
                     
                     cart = [];
                     renderCart();
                 } else {
-                    alert(res.body.message || "Terjadi kesalahan saat memproses transaksi.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Transaksi Gagal',
+                        text: data.message || 'Terjadi kesalahan saat memproses transaksi.',
+                        confirmButtonText: 'OK'
+                    });
                 }
             })
             .catch(err => {
                 btnCheckout.disabled = false;
                 btnCheckout.innerHTML = '<i class="fa-solid fa-cash-register"></i> &nbsp; Bayar Sekarang & Selesaikan';
-                console.error(err);
-                alert("Terjadi kesalahan jaringan.");
+                console.error('Checkout error:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Kesalahan Jaringan',
+                    text: 'Tidak dapat terhubung ke server. Pastikan koneksi internet Anda stabil.',
+                    confirmButtonText: 'OK'
+                });
             });
         });
 
@@ -576,6 +616,13 @@
         });
 
         productSearch.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                paymentAmountInput.focus();
+                paymentAmountInput.select();
+                return;
+            }
+
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const query = this.value.trim().toLowerCase();
