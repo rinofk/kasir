@@ -46,8 +46,8 @@ class DatabaseSeeder extends Seeder
 
         // Create Default Admin User
         $admin = User::create([
-            'name' => 'Admin Kasir',
-            'email' => 'admin@kasir.com',
+            'name' => 'Administrator',
+            'email' => 'lonkwandi@gmail.com',
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
         ]);
@@ -55,8 +55,8 @@ class DatabaseSeeder extends Seeder
 
         // Create Default Cashier User
         $kasir = User::create([
-            'name' => 'Staff Kasir',
-            'email' => 'kasir@kasir.com',
+            'name' => 'Kasir',
+            'email' => 'kasir@nining.com',
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
         ]);

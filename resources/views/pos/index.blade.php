@@ -17,14 +17,19 @@
 
             <!-- Scanner Guide Visual -->
             <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 40px; text-align: center; box-shadow: var(--shadow-sm); margin-top: 16px;">
-                <div style="width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #6366f1); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);">
-                    <i class="fa-solid fa-barcode" style="font-size: 60px; color: #ffffff;"></i>
-                </div>
+                <button type="button" onclick="startCameraScanner()" style="border: none; background: none; padding: 0; cursor: pointer; outline: none; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+                    <div style="width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #6366f1); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); position: relative;">
+                        <i class="fa-solid fa-barcode" style="font-size: 50px; color: #ffffff;"></i>
+                        <i class="fa-solid fa-camera" style="font-size: 18px; color: #ffffff; position: absolute; bottom: 8px; right: 8px; background: var(--success); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 3px solid var(--bg-secondary);"></i>
+                    </div>
+                </button>
                 <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Toko Nining POS</h2>
-                <p style="color: var(--text-secondary); max-width: 320px; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">Sistem kasir otomatis aktif. Silakan arahkan pemindai barcode ke produk untuk memasukkan barang ke keranjang.</p>
-                <span class="badge badge-success" style="padding: 6px 12px; font-size: 13px;">
-                    <i class="fa-solid fa-circle-check"></i> Pemindai Siap Menerima Input
-                </span>
+                <p style="color: var(--text-secondary); max-width: 320px; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                    Scan menggunakan scanner hardware Anda, atau <strong>klik logo bulat di atas</strong> untuk scan menggunakan kamera HP.
+                </p>
+                <button type="button" onclick="startCameraScanner()" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; max-width: 250px; padding: 12px;">
+                    <i class="fa-solid fa-camera"></i> Buka Kamera Scanner
+                </button>
             </div>
 
             <!-- Hidden Products Catalog Grid (Required for Vanilla JS lookup) -->
@@ -120,10 +125,141 @@
             </div>
         </div>
     </div>
+
+    <!-- Camera Scanner Modal -->
+    <div id="cameraScannerModal" class="modal">
+        <div class="modal-content" style="max-width: 500px; padding: 20px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fa-solid fa-camera"></i> Scan Barcode Kamera</h3>
+                <button type="button" onclick="closeCameraScanner()" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 16px 0 0 0;">
+                <div id="reader" style="width: 100%; background: #000; border-radius: var(--radius-md); overflow: hidden;"></div>
+                <div style="text-align: center; margin-top: 16px;">
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Posisikan barcode produk di dalam kotak pemindai kamera</p>
+                    <button type="button" onclick="closeCameraScanner()" class="btn btn-secondary" style="width: 100%; padding: 12px;">Tutup Kamera</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/html5-qrcode.min.js"></script>
     <script>
+        let html5QrcodeScanner = null;
+
+        function playBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 1000;
+                gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1);
+            } catch (e) {
+                console.error("Gagal memutar beep:", e);
+            }
+        }
+
+        function startCameraScanner() {
+            document.getElementById('cameraScannerModal').classList.add('active');
+            
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            
+            const config = { 
+                fps: 15, 
+                qrbox: function(width, height) {
+                    const minSize = Math.min(width, height);
+                    const boxWidth = Math.floor(minSize * 0.85);
+                    const boxHeight = Math.floor(boxWidth * 0.45);
+                    return { width: boxWidth, height: boxHeight };
+                }
+            };
+
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).catch(err => {
+                console.error("Gagal membuka kamera:", err);
+                alert("Gagal mengakses kamera. Silakan periksa izin akses kamera.");
+                closeCameraScanner();
+            });
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            playBeep();
+            
+            const query = decodedText.trim().toLowerCase();
+            const card = Array.from(document.querySelectorAll('.product-card')).find(c => c.dataset.code.toLowerCase() === query);
+            
+            if (card) {
+                if (card.classList.contains('out-of-stock')) {
+                    Swal.fire({
+                        title: 'Stok Habis',
+                        text: `Produk '${card.dataset.name}' sedang kosong.`,
+                        icon: 'error',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    const id = parseInt(card.dataset.id);
+                    const code = card.dataset.code;
+                    const name = card.dataset.name;
+                    const price = parseFloat(card.dataset.price);
+                    const stock = parseInt(card.dataset.stock);
+
+                    addToCart(id, code, name, price, stock);
+                    
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: `Ditambahkan: ${name}`,
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true
+                    });
+                }
+            } else {
+                Swal.fire({
+                    title: 'Tidak Ditemukan',
+                    text: `Barcode '${decodedText}' tidak terdaftar di sistem.`,
+                    icon: 'warning',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+
+            closeCameraScanner();
+        }
+
+        function onScanFailure(error) {
+            // Ignore scan failures during capture
+        }
+
+        function closeCameraScanner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    html5QrcodeScanner = null;
+                    document.getElementById('cameraScannerModal').classList.remove('active');
+                }).catch(err => {
+                    html5QrcodeScanner = null;
+                    document.getElementById('cameraScannerModal').classList.remove('active');
+                });
+            } else {
+                document.getElementById('cameraScannerModal').classList.remove('active');
+            }
+        }
         let cart = [];
 
         const catalogGrid = document.getElementById('catalogGrid');
