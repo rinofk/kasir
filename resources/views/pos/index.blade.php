@@ -249,13 +249,25 @@
 
         function closeCameraScanner() {
             if (html5QrcodeScanner) {
-                html5QrcodeScanner.stop().then(() => {
+                try {
+                    if (html5QrcodeScanner.isScanning) {
+                        html5QrcodeScanner.stop().then(() => {
+                            html5QrcodeScanner = null;
+                            document.getElementById('cameraScannerModal').classList.remove('active');
+                        }).catch(err => {
+                            console.error("Gagal stop scanner:", err);
+                            html5QrcodeScanner = null;
+                            document.getElementById('cameraScannerModal').classList.remove('active');
+                        });
+                    } else {
+                        html5QrcodeScanner = null;
+                        document.getElementById('cameraScannerModal').classList.remove('active');
+                    }
+                } catch (e) {
+                    console.error("Gagal menghentikan scanner secara aman:", e);
                     html5QrcodeScanner = null;
                     document.getElementById('cameraScannerModal').classList.remove('active');
-                }).catch(err => {
-                    html5QrcodeScanner = null;
-                    document.getElementById('cameraScannerModal').classList.remove('active');
-                });
+                }
             } else {
                 document.getElementById('cameraScannerModal').classList.remove('active');
             }
