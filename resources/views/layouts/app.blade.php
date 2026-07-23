@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') - {{ \App\Models\Setting::get('store_name', 'Toko Nining') }}</title>
+    @php
+        $favIcon = \App\Models\Setting::get('store_favicon', '');
+    @endphp
+    @if($favIcon && file_exists(public_path($favIcon)))
+        <link rel="icon" href="{{ asset($favIcon) }}">
+    @else
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏪</text></svg>">
+    @endif
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -15,7 +23,17 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-brand">
-            <i class="fa-solid fa-store"></i> {{ \App\Models\Setting::get('store_name', 'Toko Nining') }}
+            @php
+                $layoutStoreLogo = \App\Models\Setting::get('store_logo', '');
+                $layoutStoreIcon = \App\Models\Setting::get('store_icon', 'fa-store');
+                $layoutStoreName = \App\Models\Setting::get('store_name', 'Toko Nining');
+            @endphp
+            @if($layoutStoreLogo && file_exists(public_path($layoutStoreLogo)))
+                <img src="{{ asset($layoutStoreLogo) }}" alt="{{ $layoutStoreName }}" style="height: 28px; width: auto; object-fit: contain; border-radius: 4px; vertical-align: middle;">
+            @else
+                <i class="fa-solid {{ $layoutStoreIcon }}"></i>
+            @endif
+            <span>{{ $layoutStoreName }}</span>
         </div>
         
         <ul class="sidebar-menu">

@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $storeName }} - Informasi Toko, Rekening Bank & Stok Gas Elpiji</title>
+    @php
+        $favIcon = \App\Models\Setting::get('store_favicon', '');
+    @endphp
+    @if($favIcon && file_exists(public_path($favIcon)))
+        <link rel="icon" href="{{ asset($favIcon) }}">
+    @else
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏪</text></svg>">
+    @endif
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -27,6 +35,13 @@
             background-color: #f8fafc !important;
             color: #0f172a !important;
             font-family: 'Outfit', sans-serif !important;
+        }
+
+        /* Move SweetAlert toast container below fixed navbar */
+        .swal2-container.swal2-top-end,
+        .swal2-container.swal2-top-right {
+            top: 85px !important;
+            z-index: 100000 !important;
         }
 
         #loginModal {
@@ -379,7 +394,16 @@
     <header class="landing-header">
         <div class="header-container">
             <a href="{{ route('home') }}" class="brand-logo">
-                <i class="fa-solid fa-store" style="color: #6366f1;"></i> {{ $storeName }}
+                @php
+                    $storeLogo = \App\Models\Setting::get('store_logo', '');
+                    $storeIcon = \App\Models\Setting::get('store_icon', 'fa-store');
+                @endphp
+                @if($storeLogo && file_exists(public_path($storeLogo)))
+                    <img src="{{ asset($storeLogo) }}" alt="{{ $storeName }}" style="height: 32px; width: auto; object-fit: contain; border-radius: 4px;">
+                @else
+                    <i class="fa-solid {{ $storeIcon }}" style="color: #6366f1;"></i>
+                @endif
+                {{ $storeName }}
             </a>
 
             <ul class="nav-links">
