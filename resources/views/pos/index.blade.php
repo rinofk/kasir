@@ -101,6 +101,13 @@
         font-size: 12px;
     }
 
+    .catalog-categories {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+    }
+
     .cat-chip {
         padding: 8px 16px;
         background-color: var(--bg-secondary);
@@ -110,6 +117,7 @@
         font-weight: 600;
         cursor: pointer;
         white-space: nowrap;
+        max-width: 100%;
         transition: var(--transition);
         color: var(--text-secondary);
         display: inline-flex;
@@ -153,6 +161,18 @@
         background: #cbd5e1;
         border-radius: 4px;
     }
+
+    @if(!$stockValidation)
+    .product-card.out-of-stock {
+        opacity: 1 !important;
+        cursor: pointer !important;
+        border-color: rgba(239, 68, 68, 0.3) !important;
+    }
+    .autocomplete-item.out-of-stock {
+        opacity: 1 !important;
+        background-color: #ffffff !important;
+    }
+    @endif
 </style>
 @endsection
 
@@ -197,7 +217,7 @@
             </div>
 
             <!-- Category Filter Tabs (Default Hidden) -->
-            <div class="catalog-categories" id="catalogCategoriesContainer" style="display: none; gap: 8px; overflow-x: auto; padding: 4px 2px 8px 2px; scrollbar-width: thin; align-items: center;">
+            <div class="catalog-categories" id="catalogCategoriesContainer" style="display: none; gap: 8px; flex-wrap: wrap; padding: 4px 2px 8px 2px; align-items: center;">
                 <button type="button" class="cat-chip active" data-category-id="all">
                     <i class="fa-solid fa-layer-group"></i> Semua <span class="cat-count">{{ count($products) }}</span>
                 </button>
@@ -394,6 +414,7 @@
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/html5-qrcode.min.js"></script>
     <script>
+        const isStockValidation = {{ $stockValidation ? 'true' : 'false' }};
         let html5QrcodeScanner = null;
 
         function playBeep() {
@@ -450,7 +471,7 @@
             const card = Array.from(document.querySelectorAll('.product-card')).find(c => c.dataset.code.toLowerCase() === query);
             
             if (card) {
-                if (card.classList.contains('out-of-stock')) {
+                if (isStockValidation && card.classList.contains('out-of-stock')) {
                     Swal.fire({
                         title: 'Stok Habis',
                         text: `Produk '${card.dataset.name}' sedang kosong.`,
@@ -538,7 +559,8 @@
 
         catalogGrid.addEventListener('click', function(e) {
             const card = e.target.closest('.product-card');
-            if (!card || card.classList.contains('out-of-stock')) return;
+            if (!card) return;
+            if (isStockValidation && card.classList.contains('out-of-stock')) return;
 
             const id = parseInt(card.dataset.id);
             const code = card.dataset.code;
@@ -553,13 +575,13 @@
             const existingItem = cart.find(item => item.id === id);
 
             if (existingItem) {
-                if (existingItem.qty >= stock) {
+                if (isStockValidation && existingItem.qty >= stock) {
                     alert(`Stok tidak mencukupi. Sisa stok: ${stock}`);
                     return;
                 }
                 existingItem.qty += 1;
             } else {
-                if (stock <= 0) {
+                if (isStockValidation && stock <= 0) {
                     alert("Produk habis.");
                     return;
                 }
@@ -580,7 +602,7 @@
                 cart.splice(itemIndex, 1);
             } else {
                 const isManual = typeof item.id === 'string' && item.id.startsWith('manual_');
-                if (!isManual && newQty > item.stock) {
+                if (!isManual && isStockValidation && newQty > item.stock) {
                     alert(`Stok tidak mencukupi. Sisa stok: ${item.stock}`);
                     return;
                 }
@@ -906,7 +928,7 @@
             const card = matchedProducts[idx];
             if (!card) return;
 
-            if (card.classList.contains('out-of-stock')) {
+            if (isStockValidation && card.classList.contains('out-of-stock')) {
                 Swal.fire({
                     title: 'Stok Habis',
                     text: `Produk '${card.dataset.name}' sedang kosong.`,
@@ -1016,7 +1038,7 @@
 
                 const card = Array.from(document.querySelectorAll('.product-card')).find(c => c.dataset.code.toLowerCase() === query);
                 if (card) {
-                    if (card.classList.contains('out-of-stock')) {
+                    if (isStockValidation && card.classList.contains('out-of-stock')) {
                         Swal.fire({
                             title: 'Stok Habis',
                             text: `Produk '${card.dataset.name}' sedang kosong.`,

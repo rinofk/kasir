@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -16,8 +17,9 @@ class PosController extends Controller
     {
         $categories = Category::orderBy('name')->get();
         $products = Product::with('category')->orderBy('name')->get();
+        $stockValidation = Setting::get('stock_validation', '1') === '1';
 
-        return view('pos.index', compact('categories', 'products'));
+        return view('pos.index', compact('categories', 'products', 'stockValidation'));
     }
 
     public function store(Request $request)
@@ -37,6 +39,7 @@ class PosController extends Controller
                 $paymentAmount = $request->payment_amount;
                 $totalPrice = 0;
                 $detailsData = [];
+                $stockValidationEnabled = Setting::get('stock_validation', '1') === '1';
 
                 // 1. Process items and validate stock
                 foreach ($cart as $item) {
@@ -61,7 +64,7 @@ class PosController extends Controller
                             throw new \Exception("Produk dengan ID {$item['id']} tidak ditemukan.");
                         }
 
-                        if ($product->stock < $item['qty']) {
+                        if ($stockValidationEnabled && $product->stock < $item['qty']) {
                             throw new \Exception("Stok produk '{$product->name}' tidak mencukupi. Sisa stok: {$product->stock}");
                         }
 

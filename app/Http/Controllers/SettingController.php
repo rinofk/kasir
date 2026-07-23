@@ -15,8 +15,9 @@ class SettingController extends Controller
         $storeName = Setting::get('store_name', 'Toko Nining');
         $storeAddress = Setting::get('store_address', 'Mentibar, Kecamatan Paloh, Kabupaten Sambas');
         $storePhone = Setting::get('store_phone', '0812-3456-7890');
+        $stockValidation = Setting::get('stock_validation', '1');
 
-        return view('settings.index', compact('storeName', 'storeAddress', 'storePhone'));
+        return view('settings.index', compact('storeName', 'storeAddress', 'storePhone', 'stockValidation'));
     }
 
     /**
@@ -28,15 +29,18 @@ class SettingController extends Controller
             'store_name' => 'required|string|max:255',
             'store_address' => 'required|string|max:500',
             'store_phone' => 'required|string|max:50',
+            'stock_validation' => 'required|in:0,1',
         ], [
             'store_name.required' => 'Nama toko wajib diisi.',
             'store_address.required' => 'Alamat toko wajib diisi.',
             'store_phone.required' => 'Nomor HP/Telepon toko wajib diisi.',
+            'stock_validation.required' => 'Pilih opsi validasi stok.',
         ]);
 
         Setting::set('store_name', trim($request->store_name));
         Setting::set('store_address', trim($request->store_address));
         Setting::set('store_phone', trim($request->store_phone));
+        Setting::set('stock_validation', $request->stock_validation);
 
         return redirect()->route('settings.index')->with('success', 'Pengaturan toko berhasil diperbarui!');
     }

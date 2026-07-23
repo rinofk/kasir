@@ -74,12 +74,36 @@
                                 </label>
                                 <textarea id="store_address" 
                                           name="store_address" 
-                                          rows="4" 
+                                          rows="3" 
                                           class="form-control @error('store_address') is-invalid @enderror" 
                                           placeholder="Masukkan alamat toko secara lengkap..." 
                                           required 
                                           style="font-size: 14px; padding: 12px 14px; resize: vertical; line-height: 1.5;">{{ old('store_address', $storeAddress) }}</textarea>
                                 @error('store_address')
+                                    <span style="color: var(--danger); font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <!-- Validasi Stok Barang -->
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="stock_validation" class="form-label" style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fa-solid fa-boxes-stacked" style="color: var(--accent);"></i> Kontrol Validasi Stok Produk <span style="color: var(--danger);">*</span>
+                                </label>
+                                <select id="stock_validation" 
+                                        name="stock_validation" 
+                                        class="form-control @error('stock_validation') is-invalid @enderror" 
+                                        style="font-size: 14px; padding: 12px 14px; font-weight: 600;">
+                                    <option value="1" {{ old('stock_validation', $stockValidation) == '1' ? 'selected' : '' }}>
+                                        ✅ Aktif - Transaksi dibatasi sisa stok (Stok 0 tidak bisa dijual)
+                                    </option>
+                                    <option value="0" {{ old('stock_validation', $stockValidation) == '0' ? 'selected' : '' }}>
+                                        🚫 Nonaktif - Transaksi bisa dilanjutkan meskipun stok kosong (0 / Minus)
+                                    </option>
+                                </select>
+                                <small style="color: var(--text-secondary); display: block; margin-top: 6px; font-size: 12px; line-height: 1.4;">
+                                    Bila diset <strong>Nonaktif</strong>, produk yang stoknya habis (0) tetap dapat dimasukkan ke keranjang kasir dan diproses pembayarannya tanpa diblokir.
+                                </small>
+                                @error('stock_validation')
                                     <span style="color: var(--danger); font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span>
                                 @enderror
                             </div>
