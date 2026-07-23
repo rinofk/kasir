@@ -713,6 +713,27 @@
             }
         });
 
+        // Tab Key Navigation: Pressing Tab jumps directly to Payment input, or back to Search
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                const activeModal = document.querySelector('.modal.active');
+                if (activeModal) return;
+
+                if (paymentAmountInput && !paymentAmountInput.disabled) {
+                    e.preventDefault();
+                    if (document.activeElement === paymentAmountInput) {
+                        if (productSearch) {
+                            productSearch.focus();
+                            productSearch.select();
+                        }
+                    } else {
+                        paymentAmountInput.focus();
+                        paymentAmountInput.select();
+                    }
+                }
+            }
+        });
+
         btnCheckout.addEventListener('click', function() {
             if (cart.length === 0) return;
 
