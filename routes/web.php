@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CategoryController;
@@ -12,15 +13,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Auth;
 
-// Guest Redirection or Initial Routing
-Route::get('/', function () {
-    if (Auth::check()) {
-        return Auth::user()->hasRole('admin') 
-            ? redirect()->route('dashboard') 
-            : redirect()->route('pos');
-    }
-    return redirect()->route('login');
-});
+// Public Landing Page
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

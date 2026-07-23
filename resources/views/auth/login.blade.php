@@ -45,6 +45,12 @@
                 Masuk &nbsp;<i class="fa-solid fa-right-to-bracket"></i>
             </button>
         </form>
+
+        <div style="text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
+            <a href="{{ route('home') }}" style="color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s;">
+                <i class="fa-solid fa-arrow-left"></i> Kembali ke Landing Page
+            </a>
+        </div>
     </div>
 
 </body>

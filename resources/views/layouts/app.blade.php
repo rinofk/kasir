@@ -78,6 +78,12 @@
                 </a>
             </li>
             @endif
+
+            <li class="sidebar-menu-item">
+                <a href="{{ route('home') }}" target="_blank">
+                    <i class="fa-solid fa-globe"></i> Lihat Landing Page
+                </a>
+            </li>
         </ul>
 
         <div class="sidebar-user">

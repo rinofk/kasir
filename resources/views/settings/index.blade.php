@@ -108,6 +108,64 @@
                                 @enderror
                             </div>
 
+                            <!-- Section Divider for Bank Accounts -->
+                            <div style="border-top: 1px dashed var(--border-color); padding-top: 16px; margin-top: 8px;">
+                                <h4 style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-building-columns" style="color: var(--accent);"></i> Rekening Bank untuk Landing Page
+                                </h4>
+
+                                <!-- Bank BRI -->
+                                <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px;">
+                                    <span style="font-size: 12px; font-weight: 700; color: #00529C; display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                                        <i class="fa-solid fa-credit-card"></i> BANK BRI
+                                    </span>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                        <div>
+                                            <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">No. Rekening BRI</label>
+                                            <input type="text" name="bank_bri_number" class="form-control" value="{{ old('bank_bri_number', $bankBriNumber) }}" placeholder="1234-01-000123-53-0" style="font-size: 13px; padding: 8px 10px;">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Atas Nama</label>
+                                            <input type="text" name="bank_bri_holder" class="form-control" value="{{ old('bank_bri_holder', $bankBriHolder) }}" placeholder="Nama Pemilik" style="font-size: 13px; padding: 8px 10px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bank BNI -->
+                                <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px;">
+                                    <span style="font-size: 12px; font-weight: 700; color: #F15A24; display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                                        <i class="fa-solid fa-credit-card"></i> BANK BNI
+                                    </span>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                        <div>
+                                            <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">No. Rekening BNI</label>
+                                            <input type="text" name="bank_bni_number" class="form-control" value="{{ old('bank_bni_number', $bankBniNumber) }}" placeholder="0987654321" style="font-size: 13px; padding: 8px 10px;">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Atas Nama</label>
+                                            <input type="text" name="bank_bni_holder" class="form-control" value="{{ old('bank_bni_holder', $bankBniHolder) }}" placeholder="Nama Pemilik" style="font-size: 13px; padding: 8px 10px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bank BCA -->
+                                <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px;">
+                                    <span style="font-size: 12px; font-weight: 700; color: #0060AF; display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                                        <i class="fa-solid fa-credit-card"></i> BANK BCA
+                                    </span>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                        <div>
+                                            <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">No. Rekening BCA</label>
+                                            <input type="text" name="bank_bca_number" class="form-control" value="{{ old('bank_bca_number', $bankBcaNumber) }}" placeholder="8880123456" style="font-size: 13px; padding: 8px 10px;">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">Atas Nama</label>
+                                            <input type="text" name="bank_bca_holder" class="form-control" value="{{ old('bank_bca_holder', $bankBcaHolder) }}" placeholder="Nama Pemilik" style="font-size: 13px; padding: 8px 10px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
                         <!-- Right Column: Live Receipt Preview Box -->
