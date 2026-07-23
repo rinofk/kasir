@@ -3,40 +3,219 @@
 @section('title', 'Transaksi POS')
 @section('header_title', 'Kasir POS (Point of Sale)')
 
+@section('styles')
+<style>
+    .catalog-search-bar {
+        position: relative;
+    }
+
+    .autocomplete-dropdown {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        width: 100%;
+        max-width: 100%;
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        max-height: 340px;
+        overflow-y: auto;
+        z-index: 1000;
+        padding: 6px;
+    }
+
+    .autocomplete-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+        border: 1px solid transparent;
+        user-select: none;
+        margin-bottom: 2px;
+    }
+
+    .autocomplete-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .autocomplete-item:hover,
+    .autocomplete-item.selected {
+        background-color: var(--accent-light);
+        border-color: rgba(79, 70, 229, 0.25);
+    }
+
+    .autocomplete-item.out-of-stock {
+        opacity: 0.65;
+        background-color: #f8fafc;
+    }
+
+    .autocomplete-item-main {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .autocomplete-item-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+
+    .autocomplete-item-code {
+        font-size: 12px;
+        color: var(--text-secondary);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .autocomplete-item-code-badge {
+        background: #e2e8f0;
+        color: #334155;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .autocomplete-item-meta {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+    }
+
+    .autocomplete-item-price {
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--accent);
+    }
+
+    .autocomplete-item-stock {
+        font-size: 12px;
+    }
+
+    .cat-chip {
+        padding: 8px 16px;
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: var(--transition);
+        color: var(--text-secondary);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        outline: none;
+    }
+
+    .cat-chip .cat-count {
+        font-size: 11px;
+        opacity: 0.8;
+        background: #f1f5f9;
+        color: #475569;
+        padding: 2px 6px;
+        border-radius: 999px;
+        font-weight: 700;
+    }
+
+    .cat-chip.active {
+        background-color: var(--accent);
+        color: #ffffff;
+        border-color: var(--accent);
+        box-shadow: 0 4px 10px -2px rgba(79, 70, 229, 0.3);
+    }
+
+    .cat-chip.active .cat-count {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+    }
+
+    .cat-chip:hover:not(.active) {
+        background-color: var(--accent-light);
+        color: var(--accent);
+        border-color: var(--accent-light);
+    }
+
+    .catalog-products-grid::-webkit-scrollbar {
+        width: 6px;
+    }
+    .catalog-products-grid::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+</style>
+@endsection
+
 @section('content')
     <div class="pos-wrapper">
         
         <!-- Left Side: Catalog / Scanning Workspace -->
-        <div class="pos-catalog">
+        <div class="pos-catalog" style="display: flex; flex-direction: column; height: 100%; gap: 12px; min-height: 0;">
             
-            <!-- Search Bar (Focus target for barcode scanner) -->
-            <div class="catalog-search-bar" style="display: flex; gap: 8px; width: 100%;">
-                <input type="text" id="productSearch" class="form-control" placeholder="Arahkan kursor ke sini & scan barcode..." style="flex-grow: 1; font-size: 16px; padding: 12px 16px;" autofocus>
+            <!-- Search Bar & Toolbar -->
+            <div class="catalog-search-bar" style="display: flex; gap: 8px; width: 100%; position: relative;">
+                <input type="text" id="productSearch" class="form-control" placeholder="Arahkan kursor ke sini & scan barcode / cari produk..." style="flex-grow: 1; font-size: 15px; padding: 10px 14px;" autofocus autocomplete="off">
                 <button type="button" id="clearSearch" class="btn btn-secondary" style="padding: 10px 14px;" title="Bersihkan"><i class="fa-solid fa-xmark"></i></button>
                 <button type="button" onclick="openManualItemModal()" class="btn btn-secondary" style="padding: 10px 14px; display: flex; align-items: center; gap: 6px; white-space: nowrap;" title="Tambah Barang Manual">
                     <i class="fa-solid fa-keyboard"></i> <span>Barang Manual</span>
                 </button>
+                
+                <!-- Autocomplete Dropdown List -->
+                <div id="searchAutocompleteList" class="autocomplete-dropdown" style="display: none;"></div>
             </div>
 
-            <!-- Scanner Guide Visual -->
-            <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 40px; text-align: center; box-shadow: var(--shadow-sm); margin-top: 16px;">
+            <!-- Store Info / Scanner Guide Banner (Default Visible) -->
+            <div id="storeInfoBanner" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 40px 20px; text-align: center; box-shadow: var(--shadow-sm); margin-top: 4px;">
                 <button type="button" onclick="startCameraScanner()" style="border: none; background: none; padding: 0; cursor: pointer; outline: none; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
                     <div style="width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #6366f1); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); position: relative;">
                         <i class="fa-solid fa-barcode" style="font-size: 50px; color: #ffffff;"></i>
                         <i class="fa-solid fa-camera" style="font-size: 18px; color: #ffffff; position: absolute; bottom: 8px; right: 8px; background: var(--success); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 3px solid var(--bg-secondary);"></i>
                     </div>
                 </button>
-                <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Toko Nining POS</h2>
-                <p style="color: var(--text-secondary); max-width: 320px; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">{{ \App\Models\Setting::get('store_name', 'Toko Nining') }} POS</h2>
+                <p style="color: var(--text-secondary); max-width: 340px; font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
                     Scan menggunakan scanner hardware Anda, atau <strong>klik logo bulat di atas</strong> untuk scan menggunakan kamera HP.
                 </p>
-                <button type="button" onclick="startCameraScanner()" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%; max-width: 250px; padding: 12px;">
-                    <i class="fa-solid fa-camera"></i> Buka Kamera Scanner
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+                    <button type="button" onclick="startCameraScanner()" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px;">
+                        <i class="fa-solid fa-camera"></i> Buka Kamera Scanner
+                    </button>
+                    <button type="button" onclick="toggleCatalogDisplay(true)" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px;">
+                        <i class="fa-solid fa-boxes-stacked" style="color: var(--accent);"></i> Lihat Katalog Produk
+                    </button>
+                </div>
+            </div>
+
+            <!-- Category Filter Tabs (Default Hidden) -->
+            <div class="catalog-categories" id="catalogCategoriesContainer" style="display: none; gap: 8px; overflow-x: auto; padding: 4px 2px 8px 2px; scrollbar-width: thin; align-items: center;">
+                <button type="button" class="cat-chip active" data-category-id="all">
+                    <i class="fa-solid fa-layer-group"></i> Semua <span class="cat-count">{{ count($products) }}</span>
+                </button>
+                @foreach($categories as $cat)
+                    @php
+                        $catProductCount = $products->where('category_id', $cat->id)->count();
+                    @endphp
+                    <button type="button" class="cat-chip" data-category-id="{{ $cat->id }}">
+                        <i class="fa-solid fa-tag"></i> {{ $cat->name }} <span class="cat-count">{{ $catProductCount }}</span>
+                    </button>
+                @endforeach
+                <button type="button" class="cat-chip" onclick="toggleCatalogDisplay(false)" style="background: rgba(239, 68, 68, 0.08); color: var(--danger); border-color: rgba(239, 68, 68, 0.2); margin-left: auto;" title="Sembunyikan Katalog & Tampilkan Info Toko">
+                    <i class="fa-solid fa-xmark"></i> Sembunyikan
                 </button>
             </div>
 
-            <!-- Hidden Products Catalog Grid (Required for Vanilla JS lookup) -->
-            <div id="catalogGrid" style="display: none;">
+            <!-- Visible Products Catalog Grid (Default Hidden) -->
+            <div class="catalog-products-grid" id="catalogGrid" style="display: none; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; overflow-y: auto; flex-grow: 1; padding: 2px; align-content: start;">
                 @foreach($products as $prod)
                     <div class="product-card {{ $prod->stock <= 0 ? 'out-of-stock' : '' }}" 
                          data-id="{{ $prod->id }}"
@@ -44,9 +223,44 @@
                          data-name="{{ $prod->name }}"
                          data-price="{{ (float) $prod->selling_price }}"
                          data-stock="{{ $prod->stock }}"
-                         data-category="{{ $prod->category_id }}">
+                         data-category="{{ $prod->category_id }}"
+                         title="{{ $prod->name }} - Rp {{ number_format($prod->selling_price, 0, ',', '.') }}">
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 4px;">
+                            <span class="product-card-code" style="font-size: 11px; font-weight: 600; color: var(--text-secondary);">
+                                <i class="fa-solid fa-barcode" style="opacity: 0.6;"></i> {{ $prod->code }}
+                            </span>
+                            <span style="font-size: 10px; background: rgba(79, 70, 229, 0.08); color: var(--accent); padding: 2px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis;">
+                                {{ $prod->category->name ?? 'Umum' }}
+                            </span>
+                        </div>
+
+                        <div class="product-card-name" style="font-size: 14px; font-weight: 600; margin: 8px 0; color: var(--text-primary); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            {{ $prod->name }}
+                        </div>
+
+                        <div class="product-card-footer" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: auto;">
+                            <div class="product-card-price" style="font-weight: 700; color: var(--accent); font-size: 14px;">
+                                Rp {{ number_format($prod->selling_price, 0, ',', '.') }}
+                            </div>
+                            <div class="product-card-stock" style="font-size: 11px;">
+                                @if($prod->stock <= 0)
+                                    <span style="color: var(--danger); font-weight: 700;">Habis</span>
+                                @elseif($prod->stock <= 5)
+                                    <span style="color: var(--warning); font-weight: 600;">Stok: {{ $prod->stock }}</span>
+                                @else
+                                    <span style="color: var(--text-secondary);">Stok: <strong class="stock-num">{{ $prod->stock }}</strong></span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 @endforeach
+            </div>
+
+            <!-- Empty Grid Message (Hidden by default) -->
+            <div id="noProductsFoundMessage" style="display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; color: var(--text-secondary); background: var(--bg-secondary); border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+                <i class="fa-solid fa-boxes-packing" style="font-size: 36px; margin-bottom: 12px; color: #cbd5e1;"></i>
+                <p style="font-size: 14px; margin: 0;">Tidak ada produk yang cocok pada kategori / pencarian ini.</p>
             </div>
         </div>
 
@@ -591,47 +805,225 @@
             document.getElementById('checkoutSuccessModal').classList.remove('active');
         }
 
+        const autocompleteList = document.getElementById('searchAutocompleteList');
+        let selectedIndex = -1;
+        let matchedProducts = [];
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function renderAutocomplete() {
+            const query = productSearch.value.trim().toLowerCase();
+
+            if (!query) {
+                hideAutocomplete();
+                return;
+            }
+
+            const cards = Array.from(document.querySelectorAll('.product-card'));
+            matchedProducts = cards.filter(card => {
+                const code = card.dataset.code.toLowerCase();
+                const name = card.dataset.name.toLowerCase();
+                return code.includes(query) || name.includes(query);
+            });
+
+            if (matchedProducts.length === 0) {
+                autocompleteList.innerHTML = `
+                    <div style="padding: 14px; text-align: center; color: var(--text-secondary); font-size: 13px;">
+                        <i class="fa-solid fa-circle-exclamation" style="margin-right: 6px; color: var(--warning);"></i>
+                        Barcode / produk <strong>"${escapeHtml(productSearch.value.trim())}"</strong> tidak ditemukan.
+                    </div>
+                `;
+                autocompleteList.style.display = 'block';
+                selectedIndex = -1;
+                return;
+            }
+
+            const limit = 10;
+            const itemsToRender = matchedProducts.slice(0, limit);
+
+            if (selectedIndex >= itemsToRender.length) {
+                selectedIndex = itemsToRender.length - 1;
+            }
+
+            let html = '';
+            itemsToRender.forEach((card, idx) => {
+                const id = card.dataset.id;
+                const code = card.dataset.code;
+                const name = card.dataset.name;
+                const price = parseFloat(card.dataset.price);
+                const stock = parseInt(card.dataset.stock);
+                const isOutOfStock = stock <= 0;
+
+                html += `
+                    <div class="autocomplete-item ${isOutOfStock ? 'out-of-stock' : ''} ${idx === selectedIndex ? 'selected' : ''}" 
+                         data-idx="${idx}">
+                        <div class="autocomplete-item-main">
+                            <div class="autocomplete-item-name">${escapeHtml(name)}</div>
+                            <div class="autocomplete-item-code">
+                                <i class="fa-solid fa-barcode" style="font-size: 11px; opacity: 0.7;"></i>
+                                <span class="autocomplete-item-code-badge">${escapeHtml(code)}</span>
+                            </div>
+                        </div>
+                        <div class="autocomplete-item-meta">
+                            <div class="autocomplete-item-price">${formatRupiah(price)}</div>
+                            <div class="autocomplete-item-stock">
+                                ${isOutOfStock 
+                                    ? '<span class="badge badge-danger" style="font-size: 11px; padding: 2px 6px;">Habis</span>' 
+                                    : `<span style="color: var(--text-secondary);">Stok: <strong>${stock}</strong></span>`}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (matchedProducts.length > limit) {
+                html += `
+                    <div style="padding: 8px 12px; text-align: center; color: var(--text-secondary); font-size: 12px; border-top: 1px dashed var(--border-color); background: #fafafa;">
+                        + ${matchedProducts.length - limit} produk lainnya... (ketik lebih spesifik)
+                    </div>
+                `;
+            }
+
+            autocompleteList.innerHTML = html;
+            autocompleteList.style.display = 'block';
+
+            const items = autocompleteList.querySelectorAll('.autocomplete-item');
+            items.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const idx = parseInt(this.dataset.idx);
+                    selectAutocompleteItem(idx);
+                });
+            });
+        }
+
+        function selectAutocompleteItem(idx) {
+            if (idx < 0 || idx >= matchedProducts.length) return;
+            const card = matchedProducts[idx];
+            if (!card) return;
+
+            if (card.classList.contains('out-of-stock')) {
+                Swal.fire({
+                    title: 'Stok Habis',
+                    text: `Produk '${card.dataset.name}' sedang kosong.`,
+                    icon: 'error',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                const id = parseInt(card.dataset.id);
+                const code = card.dataset.code;
+                const name = card.dataset.name;
+                const price = parseFloat(card.dataset.price);
+                const stock = parseInt(card.dataset.stock);
+
+                addToCart(id, code, name, price, stock);
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: `Ditambahkan: ${name}`,
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true
+                });
+            }
+
+            productSearch.value = '';
+            filterCatalog();
+            hideAutocomplete();
+            productSearch.focus();
+        }
+
+        function hideAutocomplete() {
+            autocompleteList.style.display = 'none';
+            selectedIndex = -1;
+            matchedProducts = [];
+        }
+
+        function updateHighlight() {
+            const items = autocompleteList.querySelectorAll('.autocomplete-item');
+            items.forEach((item, idx) => {
+                if (idx === selectedIndex) {
+                    item.classList.add('selected');
+                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
         productSearch.addEventListener('input', function() {
             filterCatalog();
-            
-            const query = this.value.trim().toLowerCase();
-            if (query.length >= 3) {
-                const card = Array.from(document.querySelectorAll('.product-card')).find(c => c.dataset.code.toLowerCase() === query);
-                if (card) {
-                    if (card.classList.contains('out-of-stock')) {
-                        return;
-                    }
-                    const id = parseInt(card.dataset.id);
-                    const code = card.dataset.code;
-                    const name = card.dataset.name;
-                    const price = parseFloat(card.dataset.price);
-                    const stock = parseInt(card.dataset.stock);
+            selectedIndex = 0;
+            renderAutocomplete();
+        });
 
-                    addToCart(id, code, name, price, stock);
-                    
-                    this.value = '';
-                    filterCatalog();
-                }
+        productSearch.addEventListener('focus', function() {
+            if (this.value.trim().length > 0) {
+                selectedIndex = 0;
+                renderAutocomplete();
             }
         });
 
         productSearch.addEventListener('keydown', function(e) {
+            const isVisible = autocompleteList.style.display !== 'none' && matchedProducts.length > 0;
+            const maxIndex = Math.min(matchedProducts.length, 10) - 1;
+
+            if (e.key === 'ArrowDown') {
+                if (isVisible) {
+                    e.preventDefault();
+                    selectedIndex = selectedIndex < maxIndex ? selectedIndex + 1 : 0;
+                    updateHighlight();
+                }
+                return;
+            }
+
+            if (e.key === 'ArrowUp') {
+                if (isVisible) {
+                    e.preventDefault();
+                    selectedIndex = selectedIndex > 0 ? selectedIndex - 1 : maxIndex;
+                    updateHighlight();
+                }
+                return;
+            }
+
+            if (e.key === 'Escape') {
+                hideAutocomplete();
+                return;
+            }
+
             if (e.key === 'Tab') {
-                e.preventDefault();
-                paymentAmountInput.focus();
-                paymentAmountInput.select();
+                hideAutocomplete();
                 return;
             }
 
             if (e.key === 'Enter') {
                 e.preventDefault();
+
+                if (isVisible && selectedIndex >= 0 && selectedIndex <= maxIndex) {
+                    selectAutocompleteItem(selectedIndex);
+                    return;
+                }
+
                 const query = this.value.trim().toLowerCase();
                 if (!query) return;
 
                 const card = Array.from(document.querySelectorAll('.product-card')).find(c => c.dataset.code.toLowerCase() === query);
                 if (card) {
                     if (card.classList.contains('out-of-stock')) {
-                        alert("Produk habis!");
+                        Swal.fire({
+                            title: 'Stok Habis',
+                            text: `Produk '${card.dataset.name}' sedang kosong.`,
+                            icon: 'error',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                         return;
                     }
                     const id = parseInt(card.dataset.id);
@@ -641,10 +1033,28 @@
                     const stock = parseInt(card.dataset.stock);
 
                     addToCart(id, code, name, price, stock);
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: `Ditambahkan: ${name}`,
+                        showConfirmButton: false,
+                        timer: 1500,
+                        timerProgressBar: true
+                    });
+
                     this.value = '';
                     filterCatalog();
+                    hideAutocomplete();
                 } else {
-                    alert("Produk dengan kode tersebut tidak ditemukan.");
+                    Swal.fire({
+                        title: 'Tidak Ditemukan',
+                        text: `Barcode '${this.value}' tidak terdaftar di sistem.`,
+                        icon: 'warning',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 }
             }
         });
@@ -652,7 +1062,51 @@
         clearSearch.addEventListener('click', function() {
             productSearch.value = '';
             filterCatalog();
+            hideAutocomplete();
+            productSearch.focus();
         });
+
+        document.addEventListener('click', function(e) {
+            if (!productSearch.contains(e.target) && !autocompleteList.contains(e.target)) {
+                hideAutocomplete();
+            }
+        });
+
+        let isCatalogVisible = false;
+
+        function toggleCatalogDisplay(forceState) {
+            if (typeof forceState === 'boolean') {
+                isCatalogVisible = forceState;
+            } else {
+                isCatalogVisible = !isCatalogVisible;
+            }
+
+            const banner = document.getElementById('storeInfoBanner');
+            const catTabs = document.getElementById('catalogCategoriesContainer');
+            const grid = document.getElementById('catalogGrid');
+            const toggleBtn = document.getElementById('btnToggleCatalog');
+
+            if (isCatalogVisible) {
+                if (banner) banner.style.display = 'none';
+                if (catTabs) catTabs.style.display = 'flex';
+                if (grid) grid.style.display = 'grid';
+                if (toggleBtn) {
+                    toggleBtn.className = 'btn btn-primary';
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-store"></i> <span>Info Toko</span>';
+                }
+                filterCatalog();
+            } else {
+                if (banner) banner.style.display = 'flex';
+                if (catTabs) catTabs.style.display = 'none';
+                if (grid) grid.style.display = 'none';
+                const noProductsMsg = document.getElementById('noProductsFoundMessage');
+                if (noProductsMsg) noProductsMsg.style.display = 'none';
+                if (toggleBtn) {
+                    toggleBtn.className = 'btn btn-secondary';
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-boxes-stacked" style="color: var(--accent);"></i> <span>Katalog Produk</span>';
+                }
+            }
+        }
 
         const catChips = document.querySelectorAll('.cat-chip');
         catChips.forEach(chip => {
@@ -669,6 +1123,7 @@
             const categoryId = activeChip ? activeChip.dataset.categoryId : 'all';
 
             const cards = document.querySelectorAll('.product-card');
+            let visibleCount = 0;
 
             cards.forEach(card => {
                 const name = card.dataset.name.toLowerCase();
@@ -680,10 +1135,16 @@
 
                 if (matchQuery && matchCategory) {
                     card.style.display = 'flex';
+                    visibleCount++;
                 } else {
                     card.style.display = 'none';
                 }
             });
+
+            const noProductsMsg = document.getElementById('noProductsFoundMessage');
+            if (noProductsMsg) {
+                noProductsMsg.style.display = (isCatalogVisible && visibleCount === 0) ? 'flex' : 'none';
+            }
         }
 
         // Manual Items Support

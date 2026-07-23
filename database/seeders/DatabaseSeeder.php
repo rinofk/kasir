@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             'manage transactions',
             'view reports',
             'pos checkout',
+            'manage settings',
         ];
 
         foreach ($permissions as $permission) {

@@ -21,9 +21,9 @@
 
     <div class="receipt-paper">
         <div class="receipt-header">
-            <h2 style="font-size: 16px; margin: 0 0 4px 0; font-weight: 700; text-transform: uppercase;">TOKO NINING</h2>
-            <p style="font-size: 11px; margin: 0 0 2px 0; color: #333;">Mentibar, Kecamatan Paloh, Kabupaten Sambas</p>
-            <p style="font-size: 11px; margin: 0; color: #333;">Telp: 0812-3456-7890</p>
+            <h2 style="font-size: 16px; margin: 0 0 4px 0; font-weight: 700; text-transform: uppercase;">{{ strtoupper(\App\Models\Setting::get('store_name', 'TOKO NINING')) }}</h2>
+            <p style="font-size: 11px; margin: 0 0 2px 0; color: #333;">{{ \App\Models\Setting::get('store_address', 'Mentibar, Kecamatan Paloh, Kabupaten Sambas') }}</p>
+            <p style="font-size: 11px; margin: 0; color: #333;">Telp: {{ \App\Models\Setting::get('store_phone', '0812-3456-7890') }}</p>
         </div>
 
         <div class="receipt-divider"></div>

@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Auth;
 
 // Guest Redirection or Initial Routing
@@ -46,4 +47,8 @@ Route::middleware('auth')->group(function () {
     // Sales Analysis Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')->middleware('permission:view reports');
     Route::get('/reports/{transaction}', [ReportController::class, 'show'])->name('reports.show')->middleware('permission:view reports');
+
+    // Store Settings
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index')->middleware('role_or_permission:admin|manage settings');
+    Route::put('/settings', [SettingController::class, 'update'])->name('settings.update')->middleware('role_or_permission:admin|manage settings');
 });

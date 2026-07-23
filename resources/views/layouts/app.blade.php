@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title') - Toko Nining</title>
+    <title>@yield('title') - {{ \App\Models\Setting::get('store_name', 'Toko Nining') }}</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -15,7 +15,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-brand">
-            <i class="fa-solid fa-store"></i> Toko Nining
+            <i class="fa-solid fa-store"></i> {{ \App\Models\Setting::get('store_name', 'Toko Nining') }}
         </div>
         
         <ul class="sidebar-menu">
@@ -70,6 +70,14 @@
                 </a>
             </li>
             @endcan
+
+            @if(Auth::user()->hasRole('admin') || Auth::user()->can('manage settings'))
+            <li class="sidebar-menu-item {{ Request::routeIs('settings.*') ? 'active' : '' }}">
+                <a href="{{ route('settings.index') }}">
+                    <i class="fa-solid fa-gear"></i> Pengaturan Toko
+                </a>
+            </li>
+            @endif
         </ul>
 
         <div class="sidebar-user">
