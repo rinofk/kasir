@@ -78,7 +78,7 @@ class SettingController extends Controller
             $filename = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
             $destinationPath = public_path('uploads/logo');
             if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
+                @mkdir($destinationPath, 0777, true);
             }
             $file->move($destinationPath, $filename);
             Setting::set('store_logo', 'uploads/logo/' . $filename);
@@ -91,7 +91,7 @@ class SettingController extends Controller
             $filename = 'favicon_' . time() . '.' . $file->getClientOriginalExtension();
             $destinationPath = public_path('uploads/logo');
             if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
+                @mkdir($destinationPath, 0777, true);
             }
             $file->move($destinationPath, $filename);
             Setting::set('store_favicon', 'uploads/logo/' . $filename);

@@ -35,8 +35,8 @@
             @csrf
             
             <div class="form-group">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" id="email" name="email" class="form-control" placeholder="nama@email.com" value="{{ old('email') }}" required autofocus>
+                <label for="email" class="form-label">Email / Username Kasir</label>
+                <input type="text" id="email" name="email" class="form-control" placeholder="Contoh: lonkwandi atau email@domain.com" value="{{ old('email') }}" required autofocus>
             </div>
 
             <div class="form-group">
