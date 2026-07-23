@@ -29,6 +29,28 @@
             font-family: 'Outfit', sans-serif !important;
         }
 
+        #loginModal {
+            display: none !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(15, 23, 42, 0.75) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            z-index: 999999 !important;
+            align-items: center !important;
+            justify-content: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        #loginModal.active {
+            display: flex !important;
+        }
+
         .landing-header {
             width: 100% !important;
             position: fixed !important;
@@ -373,9 +395,9 @@
                         <i class="fa-solid fa-gauge"></i> Masuk Aplikasi
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px; background: rgba(255, 255, 255, 0.1); color: #ffffff; border-color: rgba(255, 255, 255, 0.2);">
+                    <button type="button" onclick="openLoginModal()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px; background: rgba(255, 255, 255, 0.1); color: #ffffff; border-color: rgba(255, 255, 255, 0.2); cursor: pointer;">
                         <i class="fa-solid fa-right-to-bracket"></i> Login
-                    </a>
+                    </button>
                 @endif
             </div>
         </div>
@@ -568,7 +590,89 @@
         </div>
     </footer>
 
+    <!-- Modal Login Staff / Admin -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-container" style="max-width: 420px; width: 92%; background: #ffffff; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.2);">
+            <!-- Modal Header -->
+            <div style="background: var(--hero-bg); color: #ffffff; padding: 24px 24px 20px 24px; text-align: center; position: relative;">
+                <button type="button" onclick="closeLoginModal()" style="position: absolute; top: 16px; right: 16px; background: rgba(255, 255, 255, 0.15); border: none; color: #ffffff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;" title="Tutup">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div style="width: 52px; height: 52px; background: rgba(99, 102, 241, 0.25); border-radius: 14px; color: #818cf8; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 24px; border: 1px solid rgba(129, 140, 248, 0.3);">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <h3 style="font-size: 20px; font-weight: 700; margin: 0 0 4px 0; color: #ffffff;">{{ $storeName }}</h3>
+                <p style="font-size: 13px; color: #94a3b8; margin: 0;">Masuk untuk mengelola transaksi & toko</p>
+            </div>
+
+            <!-- Modal Body / Form -->
+            <div style="padding: 24px;">
+                @if($errors->any())
+                    <div class="alert alert-danger" style="margin-bottom: 16px; font-size: 13px; padding: 10px 14px; border-radius: 8px; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626;">
+                        @foreach ($errors->all() as $error)
+                            <div><i class="fa-solid fa-triangle-exclamation"></i> {{ $error }}</div>
+                        @endforeach
+                    </div>
+                @endif
+
+                <form action="{{ route('login') }}" method="POST">
+                    @csrf
+                    
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="modal_email" class="form-label" style="font-weight: 600; font-size: 13px; color: #334155;">Email Kasir / Admin</label>
+                        <input type="email" id="modal_email" name="email" class="form-control" placeholder="nama@email.com" value="{{ old('email') }}" required autofocus style="font-size: 14px; padding: 11px 14px;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="modal_password" class="form-label" style="font-weight: 600; font-size: 13px; color: #334155;">Password</label>
+                        <input type="password" id="modal_password" name="password" class="form-control" placeholder="••••••••" required style="font-size: 14px; padding: 11px 14px;">
+                    </div>
+
+                    <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+                        <input type="checkbox" id="modal_remember" name="remember" style="cursor: pointer; width: 16px; height: 16px;">
+                        <label for="modal_remember" class="form-label" style="margin-bottom: 0; cursor: pointer; user-select: none; font-size: 13px; color: #475569;">Ingat Saya</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 15px; font-weight: 600; justify-content: center; border-radius: 8px;">
+                        Masuk &nbsp;<i class="fa-solid fa-right-to-bracket"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function openLoginModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.classList.add('active');
+                setTimeout(() => {
+                    const emailInput = document.getElementById('modal_email');
+                    if (emailInput) emailInput.focus();
+                }, 150);
+            }
+        }
+
+        function closeLoginModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLoginModal();
+            }
+        });
+
+        const loginModalElem = document.getElementById('loginModal');
+        if (loginModalElem) {
+            loginModalElem.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeLoginModal();
+                }
+            });
+        }
+
         function copyToClipboard(rawText, bankName) {
             const cleanDigits = String(rawText).replace(/[^0-9]/g, '');
 
@@ -603,5 +707,13 @@
             if (callback) callback();
         }
     </script>
+
+    @if($errors->any())
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                openLoginModal();
+            });
+        </script>
+    @endif
 </body>
 </html>
