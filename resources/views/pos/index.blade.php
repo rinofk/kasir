@@ -713,8 +713,23 @@
             }
         });
 
-        // Tab Key Navigation: Pressing Tab jumps directly to Payment input, or back to Search
+        // Global Keyboard Shortcuts (Enter for Print/Checkout, Tab for Payment Input, Escape for Modal)
         document.addEventListener('keydown', function(e) {
+            const successModal = document.getElementById('checkoutSuccessModal');
+            if (successModal && successModal.classList.contains('active')) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const btnPrint = document.getElementById('btnPrintReceipt');
+                    if (btnPrint) {
+                        btnPrint.click();
+                    }
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeSuccessModal();
+                }
+                return;
+            }
+
             if (e.key === 'Tab') {
                 const activeModal = document.querySelector('.modal.active');
                 if (activeModal) return;
@@ -819,6 +834,10 @@
                     document.getElementById('btnPrintReceipt').href = `/pos/receipt/${data.transaction_id}`;
 
                     document.getElementById('checkoutSuccessModal').classList.add('active');
+                    setTimeout(() => {
+                        const btnPrint = document.getElementById('btnPrintReceipt');
+                        if (btnPrint) btnPrint.focus();
+                    }, 100);
                     
                     cart = [];
                     renderCart();
@@ -846,6 +865,12 @@
 
         function closeSuccessModal() {
             document.getElementById('checkoutSuccessModal').classList.remove('active');
+            if (productSearch) {
+                setTimeout(() => {
+                    productSearch.focus();
+                    productSearch.select();
+                }, 100);
+            }
         }
 
         const autocompleteList = document.getElementById('searchAutocompleteList');
