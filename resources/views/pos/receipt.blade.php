@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cetak Struk #{{ $transaction->invoice_number }}</title>
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ file_exists(public_path('css/app.css')) ? filemtime(public_path('css/app.css')) : time() }}">
     <style>
         body {
             background-color: #f1f5f9;
@@ -14,6 +14,9 @@
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
+        }
+        .receipt-paper {
+            font-family: 'Outfit', sans-serif !important;
         }
     </style>
 </head>
@@ -28,10 +31,19 @@
 
         <div class="receipt-divider"></div>
 
-        <div style="font-size: 11px; margin-bottom: 8px; line-height: 1.4;">
-            <div><strong>No. Invoice:</strong> {{ $transaction->invoice_number }}</div>
-            <div><strong>Waktu:</strong> {{ $transaction->created_at->format('d/m/Y H:i') }}</div>
-            <div><strong>Kasir:</strong> {{ $transaction->user->name }}</div>
+        <div style="font-size: 11px; margin-bottom: 8px; line-height: 1.4; display: flex; flex-direction: column; gap: 2px;">
+            <div style="display: flex; justify-content: space-between;">
+                <strong>No. Invoice:</strong>
+                <span>{{ $transaction->invoice_number }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Waktu:</strong>
+                <span>{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Kasir:</strong>
+                <span>{{ $transaction->user->name }}</span>
+            </div>
         </div>
 
         <div class="receipt-divider"></div>
@@ -39,12 +51,16 @@
         <!-- Items Table -->
         <div style="margin-bottom: 8px;">
             @foreach($transaction->details as $detail)
-                <div class="receipt-item-row">
-                    <span style="font-weight: 600; width: 65%;">{{ $detail->product_id ? $detail->product->name : $detail->custom_name }}</span>
-                    <span style="width: 35%; text-align: right;">{{ $detail->quantity }}x {{ number_format($detail->price, 0, ',', '.') }}</span>
-                </div>
-                <div style="font-size: 11px; text-align: right; margin-bottom: 6px; padding-right: 2px;">
-                    Rp {{ number_format($detail->subtotal, 0, ',', '.') }}
+                <div style="margin-bottom: 10px; line-height: 1.4;">
+                    <!-- Item Name (top line) -->
+                    <div style="font-size: 12px; font-weight: 500; color: #000;">
+                        {{ $detail->product_id ? $detail->product->name : $detail->custom_name }}
+                    </div>
+                    <!-- Details & Subtotal (bottom line) -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #333; margin-top: 1px;">
+                        <span>Rp{{ number_format($detail->price, 0, ',', '.') }} x {{ $detail->quantity }}</span>
+                        <strong style="font-weight: 700; color: #000; font-size: 12px;">Rp{{ number_format($detail->subtotal, 0, ',', '.') }}</strong>
+                    </div>
                 </div>
             @endforeach
         </div>

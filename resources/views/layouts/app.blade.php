@@ -13,7 +13,7 @@
     @else
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏪</text></svg>">
     @endif
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ file_exists(public_path('css/app.css')) ? filemtime(public_path('css/app.css')) : time() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @yield('styles')
@@ -121,8 +121,13 @@
     <!-- Main Content -->
     <div class="main-wrapper">
         <header class="header">
-            <div class="header-title">
-                @yield('header_title')
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button type="button" id="sidebarToggle" class="btn btn-secondary" style="padding: 10px 14px; display: none; align-items: center; justify-content: center;" title="Buka Menu">
+                    <i class="fa-solid fa-bars" style="font-size: 18px;"></i>
+                </button>
+                <div class="header-title">
+                    @yield('header_title')
+                </div>
             </div>
             <div class="header-right">
                 <span class="badge badge-primary">
@@ -201,6 +206,26 @@
                 });
             }
         });
+
+        // Sidebar Collapsible Toggle for Tablet/Mobile
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+            });
+
+            // Close sidebar when clicking outside on small screens
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 1024) {
+                    if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                        sidebar.classList.remove('active');
+                    }
+                }
+            });
+        }
     </script>
     @yield('scripts')
 </body>

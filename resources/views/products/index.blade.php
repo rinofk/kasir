@@ -99,7 +99,12 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="add_code" class="form-label">Kode Produk / Barcode</label>
-                        <input type="text" id="add_code" name="code" class="form-control" required placeholder="Contoh: BRS5K">
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="add_code" name="code" class="form-control" required placeholder="Contoh: BRS5K" style="flex-grow: 1;">
+                            <button type="button" onclick="startCameraScanner('add_code')" class="btn btn-secondary" style="padding: 10px 14px;" title="Scan menggunakan kamera HP">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="add_name" class="form-label">Nama Produk</label>
@@ -150,7 +155,12 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="edit_code" class="form-label">Kode Produk / Barcode</label>
-                        <input type="text" id="edit_code" name="code" class="form-control" required>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="edit_code" name="code" class="form-control" required style="flex-grow: 1;">
+                            <button type="button" onclick="startCameraScanner('edit_code')" class="btn btn-secondary" style="padding: 10px 14px;" title="Scan menggunakan kamera HP">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="edit_name" class="form-label">Nama Produk</label>
@@ -186,10 +196,129 @@
             </form>
         </div>
     </div>
+
+    <!-- Camera Scanner Modal -->
+    <div id="cameraScannerModal" class="modal">
+        <div class="modal-content" style="max-width: 500px; padding: 20px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fa-solid fa-camera"></i> Scan Barcode Kamera</h3>
+                <button type="button" onclick="closeCameraScanner()" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 16px 0 0 0;">
+                <div id="reader" style="width: 100%; background: #000; border-radius: var(--radius-md); overflow: hidden;"></div>
+                <div style="text-align: center; margin-top: 16px;">
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Posisikan barcode produk di dalam kotak pemindai kamera</p>
+                    <button type="button" onclick="closeCameraScanner()" class="btn btn-secondary" style="width: 100%; padding: 12px;">Tutup Kamera</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/html5-qrcode.min.js"></script>
     <script>
+        let html5QrcodeScanner = null;
+        let activeTargetInputId = null;
+
+        function playBeep() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 1000;
+                gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1);
+            } catch (e) {
+                console.error("Gagal memutar beep:", e);
+            }
+        }
+
+        function startCameraScanner(targetInputId) {
+            activeTargetInputId = targetInputId;
+            document.getElementById('cameraScannerModal').classList.add('active');
+            
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            
+            const config = { 
+                fps: 15, 
+                qrbox: function(width, height) {
+                    const minSize = Math.min(width, height);
+                    const boxWidth = Math.floor(minSize * 0.85);
+                    const boxHeight = Math.floor(boxWidth * 0.45);
+                    return { width: boxWidth, height: boxHeight };
+                }
+            };
+
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).catch(err => {
+                console.error("Gagal membuka kamera:", err);
+                alert("Gagal mengakses kamera. Silakan periksa izin akses kamera.");
+                closeCameraScanner();
+            });
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            playBeep();
+            
+            if (activeTargetInputId) {
+                document.getElementById(activeTargetInputId).value = decodedText.trim();
+            }
+            
+            closeCameraScanner();
+            
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `Barcode terbaca: ${decodedText}`,
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
+        }
+
+        function onScanFailure(error) {
+            // Ignore scan failures during capture
+        }
+
+        function closeCameraScanner() {
+            if (html5QrcodeScanner) {
+                try {
+                    if (html5QrcodeScanner.isScanning) {
+                        html5QrcodeScanner.stop().then(() => {
+                            html5QrcodeScanner = null;
+                            document.getElementById('cameraScannerModal').classList.remove('active');
+                        }).catch(err => {
+                            console.error("Gagal stop scanner:", err);
+                            html5QrcodeScanner = null;
+                            document.getElementById('cameraScannerModal').classList.remove('active');
+                        });
+                    } else {
+                        html5QrcodeScanner = null;
+                        document.getElementById('cameraScannerModal').classList.remove('active');
+                    }
+                } catch (e) {
+                    console.error("Gagal menghentikan scanner secara aman:", e);
+                    html5QrcodeScanner = null;
+                    document.getElementById('cameraScannerModal').classList.remove('active');
+                }
+            } else {
+                document.getElementById('cameraScannerModal').classList.remove('active');
+            }
+        }
+
         function openAddModal() {
             document.getElementById('addModal').classList.add('active');
         }
@@ -214,6 +343,7 @@
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('active');
+                closeCameraScanner();
             }
         }
     </script>

@@ -9,6 +9,12 @@
         position: relative;
     }
 
+    @media (max-width: 576px) {
+        #btnToggleBanner span, #btnManualItem span {
+            display: none;
+        }
+    }
+
     .autocomplete-dropdown {
         position: absolute;
         top: calc(100% + 6px);
@@ -186,7 +192,10 @@
             <div class="catalog-search-bar" style="display: flex; gap: 8px; width: 100%; position: relative;">
                 <input type="text" id="productSearch" class="form-control" placeholder="Arahkan kursor ke sini & scan barcode / cari produk..." style="flex-grow: 1; font-size: 15px; padding: 10px 14px;" autofocus autocomplete="off">
                 <button type="button" id="clearSearch" class="btn btn-secondary" style="padding: 10px 14px;" title="Bersihkan"><i class="fa-solid fa-xmark"></i></button>
-                <button type="button" onclick="openManualItemModal()" class="btn btn-secondary" style="padding: 10px 14px; display: flex; align-items: center; gap: 6px; white-space: nowrap;" title="Tambah Barang Manual">
+                <button type="button" id="btnToggleBanner" onclick="toggleBannerVisibility()" class="btn btn-secondary" style="padding: 10px 14px; display: flex; align-items: center; gap: 6px; white-space: nowrap;" title="Sembunyikan/Tampilkan Panel Banner">
+                    <i class="fa-solid fa-eye-slash"></i> <span>Sembunyikan Panel</span>
+                </button>
+                <button type="button" id="btnManualItem" onclick="openManualItemModal()" class="btn btn-secondary" style="padding: 10px 14px; display: flex; align-items: center; gap: 6px; white-space: nowrap;" title="Tambah Barang Manual">
                     <i class="fa-solid fa-keyboard"></i> <span>Barang Manual</span>
                 </button>
                 
@@ -195,25 +204,41 @@
             </div>
 
             <!-- Store Info / Scanner Guide Banner (Default Visible) -->
-            <div id="storeInfoBanner" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 40px 20px; text-align: center; box-shadow: var(--shadow-sm); margin-top: 4px;">
-                <button type="button" onclick="startCameraScanner()" style="border: none; background: none; padding: 0; cursor: pointer; outline: none; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-                    <div style="width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #6366f1); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); position: relative;">
-                        <i class="fa-solid fa-barcode" style="font-size: 50px; color: #ffffff;"></i>
-                        <i class="fa-solid fa-camera" style="font-size: 18px; color: #ffffff; position: absolute; bottom: 8px; right: 8px; background: var(--success); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 3px solid var(--bg-secondary);"></i>
+            <div id="storeInfoBanner" style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 40px 20px; text-align: center; box-shadow: var(--shadow-sm); margin-top: 4px; position: relative;">
+                
+                <!-- State 1: Default Banner Content -->
+                <div id="bannerDefaultContent" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                    <button type="button" onclick="startCameraScanner()" style="border: none; background: none; padding: 0; cursor: pointer; outline: none; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+                        <div style="width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #6366f1); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); position: relative;">
+                            <i class="fa-solid fa-barcode" style="font-size: 50px; color: #ffffff;"></i>
+                            <i class="fa-solid fa-camera" style="font-size: 18px; color: #ffffff; position: absolute; bottom: 8px; right: 8px; background: var(--success); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 3px solid var(--bg-secondary);"></i>
+                        </div>
+                    </button>
+                    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">{{ \App\Models\Setting::get('store_name', 'Toko Nining') }} POS</h2>
+                    <p style="color: var(--text-secondary); max-width: 340px; font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
+                        Scan menggunakan scanner hardware Anda, atau <strong>klik logo bulat di atas</strong> untuk scan menggunakan kamera HP.
+                    </p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+                        <button type="button" onclick="startCameraScanner()" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px;">
+                            <i class="fa-solid fa-camera"></i> Buka Kamera Scanner
+                        </button>
+                        <button type="button" onclick="toggleCatalogDisplay(true)" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px;">
+                            <i class="fa-solid fa-boxes-stacked" style="color: var(--accent);"></i> Lihat Katalog Produk
+                        </button>
                     </div>
-                </button>
-                <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">{{ \App\Models\Setting::get('store_name', 'Toko Nining') }} POS</h2>
-                <p style="color: var(--text-secondary); max-width: 340px; font-size: 14px; line-height: 1.5; margin-bottom: 24px;">
-                    Scan menggunakan scanner hardware Anda, atau <strong>klik logo bulat di atas</strong> untuk scan menggunakan kamera HP.
-                </p>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
-                    <button type="button" onclick="startCameraScanner()" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px;">
-                        <i class="fa-solid fa-camera"></i> Buka Kamera Scanner
-                    </button>
-                    <button type="button" onclick="toggleCatalogDisplay(true)" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; padding: 12px 20px;">
-                        <i class="fa-solid fa-boxes-stacked" style="color: var(--accent);"></i> Lihat Katalog Produk
-                    </button>
                 </div>
+
+                <!-- State 2: Camera Scanner Content (Default Hidden) -->
+                <div id="bannerCameraContent" style="display: none; width: 100%; max-width: 480px; flex-direction: column; align-items: center; justify-content: center;">
+                    <div id="reader" style="width: 100%; background: #000; border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm);"></div>
+                    <div style="text-align: center; margin-top: 16px; width: 100%;">
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Posisikan barcode produk di dalam kotak pemindai kamera</p>
+                        <button type="button" onclick="closeCameraScanner()" class="btn btn-secondary" style="width: 100%; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--danger); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+                            <i class="fa-solid fa-camera-slash"></i> Tutup Kamera
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Category Filter Tabs (Default Hidden) -->
@@ -301,7 +326,7 @@
             </div>
 
             <div class="pos-cart-footer">
-                <div class="pos-total-row">
+                <div class="pos-total-row" style="display: none;">
                     <span>Subtotal</span>
                     <span id="txtSubtotal">Rp 0</span>
                 </div>
@@ -363,22 +388,7 @@
         </div>
     </div>
 
-    <!-- Camera Scanner Modal -->
-    <div id="cameraScannerModal" class="modal">
-        <div class="modal-content" style="max-width: 500px; padding: 20px;">
-            <div class="modal-header">
-                <h3 class="modal-title"><i class="fa-solid fa-camera"></i> Scan Barcode Kamera</h3>
-                <button type="button" onclick="closeCameraScanner()" class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body" style="padding: 16px 0 0 0;">
-                <div id="reader" style="width: 100%; background: #000; border-radius: var(--radius-md); overflow: hidden;"></div>
-                <div style="text-align: center; margin-top: 16px;">
-                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Posisikan barcode produk di dalam kotak pemindai kamera</p>
-                    <button type="button" onclick="closeCameraScanner()" class="btn btn-secondary" style="width: 100%; padding: 12px;">Tutup Kamera</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Camera Scanner Modal Removed (Camera is now embedded directly in the main workspace) -->
 
     <!-- Manual Item Modal -->
     <div id="manualItemModal" class="modal">
@@ -437,8 +447,13 @@
             }
         }
 
+        let lastScannedBarcode = '';
+        let lastScannedTime = 0;
+
         function startCameraScanner() {
-            document.getElementById('cameraScannerModal').classList.add('active');
+            document.getElementById('bannerDefaultContent').style.display = 'none';
+            document.getElementById('bannerCameraContent').style.display = 'flex';
+            document.getElementById('storeInfoBanner').style.padding = '20px';
             
             html5QrcodeScanner = new Html5Qrcode("reader");
             
@@ -465,10 +480,20 @@
         }
 
         function onScanSuccess(decodedText, decodedResult) {
+            const now = Date.now();
+            const query = decodedText.trim();
+            
+            // Prevent duplicate scan within 2 seconds
+            if (query === lastScannedBarcode && (now - lastScannedTime) < 2000) {
+                return;
+            }
+            
+            lastScannedBarcode = query;
+            lastScannedTime = now;
+            
             playBeep();
             
-            const query = decodedText.trim().toLowerCase();
-            const card = Array.from(document.querySelectorAll('.product-card')).find(c => c.dataset.code.toLowerCase() === query);
+            const card = Array.from(document.querySelectorAll('.product-card')).find(c => c.dataset.code.toLowerCase() === query.toLowerCase());
             
             if (card) {
                 if (isStockValidation && card.classList.contains('out-of-stock')) {
@@ -507,8 +532,6 @@
                     showConfirmButton: false
                 });
             }
-
-            closeCameraScanner();
         }
 
         function onScanFailure(error) {
@@ -518,26 +541,33 @@
         function closeCameraScanner() {
             if (html5QrcodeScanner) {
                 try {
-                    if (html5QrcodeScanner.isScanning) {
-                        html5QrcodeScanner.stop().then(() => {
-                            html5QrcodeScanner = null;
-                            document.getElementById('cameraScannerModal').classList.remove('active');
-                        }).catch(err => {
-                            console.error("Gagal stop scanner:", err);
-                            html5QrcodeScanner = null;
-                            document.getElementById('cameraScannerModal').classList.remove('active');
-                        });
-                    } else {
+                    const stopPromise = html5QrcodeScanner.isScanning 
+                        ? html5QrcodeScanner.stop() 
+                        : Promise.resolve();
+
+                    stopPromise.then(() => {
                         html5QrcodeScanner = null;
-                        document.getElementById('cameraScannerModal').classList.remove('active');
-                    }
+                        document.getElementById('bannerCameraContent').style.display = 'none';
+                        document.getElementById('bannerDefaultContent').style.display = 'flex';
+                        document.getElementById('storeInfoBanner').style.padding = '40px 20px';
+                    }).catch(err => {
+                        console.error("Gagal stop scanner:", err);
+                        html5QrcodeScanner = null;
+                        document.getElementById('bannerCameraContent').style.display = 'none';
+                        document.getElementById('bannerDefaultContent').style.display = 'flex';
+                        document.getElementById('storeInfoBanner').style.padding = '40px 20px';
+                    });
                 } catch (e) {
                     console.error("Gagal menghentikan scanner secara aman:", e);
                     html5QrcodeScanner = null;
-                    document.getElementById('cameraScannerModal').classList.remove('active');
+                    document.getElementById('bannerCameraContent').style.display = 'none';
+                    document.getElementById('bannerDefaultContent').style.display = 'flex';
+                    document.getElementById('storeInfoBanner').style.padding = '40px 20px';
                 }
             } else {
-                document.getElementById('cameraScannerModal').classList.remove('active');
+                document.getElementById('bannerCameraContent').style.display = 'none';
+                document.getElementById('bannerDefaultContent').style.display = 'flex';
+                document.getElementById('storeInfoBanner').style.padding = '40px 20px';
             }
         }
         let cart = [];
@@ -589,6 +619,9 @@
             }
 
             renderCart();
+
+            // Auto scroll to display the newly added / scanned product
+            cartContainer.scrollTop = cartContainer.scrollHeight;
         }
 
         function updateQty(id, delta) {
@@ -1141,6 +1174,44 @@
         });
 
         let isCatalogVisible = false;
+        let isBannerVisible = true;
+
+        function toggleBannerVisibility() {
+            isBannerVisible = !isBannerVisible;
+            const banner = document.getElementById('storeInfoBanner');
+            const btn = document.getElementById('btnToggleBanner');
+            
+            if (isBannerVisible) {
+                banner.style.display = 'flex';
+                if (document.getElementById('bannerCameraContent').style.display === 'flex') {
+                    banner.style.padding = '20px';
+                } else {
+                    banner.style.padding = '40px 20px';
+                }
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> <span>Sembunyikan Panel</span>';
+                btn.className = 'btn btn-secondary';
+            } else {
+                closeCameraScanner();
+                banner.style.display = 'none';
+                btn.innerHTML = '<i class="fa-solid fa-eye"></i> <span>Tampilkan Panel</span>';
+                btn.className = 'btn btn-primary';
+            }
+        }
+
+        // Initialize banner state based on viewport width (collapsed by default on mobile)
+        function initBannerState() {
+            const banner = document.getElementById('storeInfoBanner');
+            const btn = document.getElementById('btnToggleBanner');
+            
+            if (window.innerWidth <= 1024) {
+                isBannerVisible = false;
+                if (banner) banner.style.display = 'none';
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-eye"></i> <span>Tampilkan Panel</span>';
+                    btn.className = 'btn btn-primary';
+                }
+            }
+        }
 
         function toggleCatalogDisplay(forceState) {
             if (typeof forceState === 'boolean') {
@@ -1155,6 +1226,7 @@
             const toggleBtn = document.getElementById('btnToggleCatalog');
 
             if (isCatalogVisible) {
+                closeCameraScanner();
                 if (banner) banner.style.display = 'none';
                 if (catTabs) catTabs.style.display = 'flex';
                 if (grid) grid.style.display = 'grid';
@@ -1164,7 +1236,7 @@
                 }
                 filterCatalog();
             } else {
-                if (banner) banner.style.display = 'flex';
+                if (banner && isBannerVisible) banner.style.display = 'flex';
                 if (catTabs) catTabs.style.display = 'none';
                 if (grid) grid.style.display = 'none';
                 const noProductsMsg = document.getElementById('noProductsFoundMessage');
@@ -1256,6 +1328,9 @@
 
             renderCart();
             closeManualItemModal();
+
+            // Auto scroll to display the newly added / scanned product
+            cartContainer.scrollTop = cartContainer.scrollHeight;
             
             Swal.fire({
                 toast: true,
@@ -1276,5 +1351,8 @@
                 this.value = '';
             }
         });
+
+        // Initialize banner state on page load
+        initBannerState();
     </script>
 @endsection

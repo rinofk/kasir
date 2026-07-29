@@ -461,6 +461,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-height: 0;
 }
 
 .pos-cart-header {
@@ -478,6 +479,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-height: 0;
 }
 
 .pos-cart-item {
@@ -825,54 +827,8 @@ body {
 }
 
 @media (max-width: 768px) {
-    body {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        border-right: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .sidebar-brand {
-        padding: 16px;
-        font-size: 18px;
-        justify-content: center;
-    }
-
-    .sidebar-menu {
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 8px;
-        gap: 4px;
-        flex-wrap: nowrap;
-    }
-
-    .sidebar-menu-item {
-        margin: 0;
-    }
-
-    .sidebar-menu-item a {
-        padding: 10px 14px;
-        font-size: 13px;
-        white-space: nowrap;
-        gap: 6px;
-    }
-
-    .sidebar-user {
-        display: none; /* Hide user profile drawer on mobile header layout */
-    }
-
-    .main-wrapper {
-        margin-left: 0;
-        width: 100%;
-    }
-
     .header {
-        padding: 0 20px;
+        padding: 0 16px;
         height: 60px;
     }
 
@@ -885,7 +841,7 @@ body {
     }
 
     .content-body {
-        padding: 20px;
+        padding: 16px;
     }
 
     .dashboard-layout {
@@ -904,14 +860,6 @@ body {
 
     .stat-value {
         font-size: 20px;
-    }
-
-    .catalog-categories {
-        display: none;
-    }
-
-    .catalog-products-grid {
-        display: none;
     }
 }
 
@@ -1003,5 +951,27 @@ nav[role="navigation"] span {
     .page-link {
         padding: 6px 12px;
         font-size: 12px;
+    }
+}
+
+/* Tablet & Mobile Sidebar Responsive Collapsing */
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: var(--transition);
+        box-shadow: 5px 0 25px rgba(15, 23, 42, 0.15);
+    }
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    .main-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    #sidebarToggle {
+        display: inline-flex !important;
+    }
+    .header {
+        padding: 0 16px;
     }
 }
