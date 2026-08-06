@@ -22,18 +22,23 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <div class="sidebar-brand">
-            @php
-                $layoutStoreLogo = \App\Models\Setting::get('store_logo', '');
-                $layoutStoreIcon = \App\Models\Setting::get('store_icon', 'fa-store');
-                $layoutStoreName = \App\Models\Setting::get('store_name', 'Toko Nining');
-            @endphp
-            @if($layoutStoreLogo && file_exists(public_path($layoutStoreLogo)))
-                <img src="{{ asset($layoutStoreLogo) }}" alt="{{ $layoutStoreName }}" style="height: 28px; width: auto; object-fit: contain; border-radius: 4px; vertical-align: middle;">
-            @else
-                <i class="fa-solid {{ $layoutStoreIcon }}"></i>
-            @endif
-            <span>{{ $layoutStoreName }}</span>
+        <div class="sidebar-brand" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                @php
+                    $layoutStoreLogo = \App\Models\Setting::get('store_logo', '');
+                    $layoutStoreIcon = \App\Models\Setting::get('store_icon', 'fa-store');
+                    $layoutStoreName = \App\Models\Setting::get('store_name', 'Toko Nining');
+                @endphp
+                @if($layoutStoreLogo && file_exists(public_path($layoutStoreLogo)))
+                    <img src="{{ asset($layoutStoreLogo) }}" alt="{{ $layoutStoreName }}" style="height: 28px; width: auto; object-fit: contain; border-radius: 4px; vertical-align: middle;">
+                @else
+                    <i class="fa-solid {{ $layoutStoreIcon }}"></i>
+                @endif
+                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">{{ $layoutStoreName }}</span>
+            </div>
+            <button type="button" id="btnCollapseSidebar" class="sidebar-collapse-btn" style="background: transparent; border: none; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 16px; padding: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; outline: none;" title="Sembunyikan Sidebar">
+                <i class="fa-solid fa-angles-left"></i>
+            </button>
         </div>
         
         <ul class="sidebar-menu">
@@ -217,12 +222,42 @@
                 sidebar.classList.toggle('active');
             });
 
-            // Close sidebar when clicking outside on small screens
+            // Close sidebar when clicking outside on small screens or when collapsed
             document.addEventListener('click', function(e) {
-                if (window.innerWidth <= 1024) {
-                    if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                if (window.innerWidth <= 1024 || document.body.classList.contains('sidebar-collapsed')) {
+                    if (sidebar && sidebarToggle && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
                         sidebar.classList.remove('active');
                     }
+                }
+            });
+        }
+
+        // Sidebar Collapse/Expand Logic
+        const btnCollapseSidebar = document.getElementById('btnCollapseSidebar');
+        const bodyTag = document.body;
+
+        if (localStorage.getItem('sidebar-collapsed') === 'true') {
+            bodyTag.classList.add('sidebar-collapsed');
+            if (btnCollapseSidebar) {
+                btnCollapseSidebar.innerHTML = '<i class="fa-solid fa-angles-right"></i>';
+                btnCollapseSidebar.setAttribute('title', 'Tampilkan Sidebar');
+            }
+        }
+
+        if (btnCollapseSidebar) {
+            btnCollapseSidebar.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (bodyTag.classList.contains('sidebar-collapsed')) {
+                    bodyTag.classList.remove('sidebar-collapsed');
+                    localStorage.setItem('sidebar-collapsed', 'false');
+                    btnCollapseSidebar.innerHTML = '<i class="fa-solid fa-angles-left"></i>';
+                    btnCollapseSidebar.setAttribute('title', 'Sembunyikan Sidebar');
+                    if (sidebar) sidebar.classList.remove('active');
+                } else {
+                    bodyTag.classList.add('sidebar-collapsed');
+                    localStorage.setItem('sidebar-collapsed', 'true');
+                    btnCollapseSidebar.innerHTML = '<i class="fa-solid fa-angles-right"></i>';
+                    btnCollapseSidebar.setAttribute('title', 'Tampilkan Sidebar');
                 }
             });
         }

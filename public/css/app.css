@@ -565,6 +565,19 @@ body {
     color: var(--text-primary);
     border-top: 1px solid var(--border-color);
     padding-top: 12px;
+    align-items: center;
+}
+
+.pos-total-row.grand-total span:first-child {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.pos-total-row.grand-total #txtTotal {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
 }
 
 .catalog-search-bar {
@@ -975,3 +988,41 @@ nav[role="navigation"] span {
         padding: 0 16px;
     }
 }
+
+/* ==========================================
+   Sidebar Collapse Styling (Desktop)
+   ========================================== */
+@media (min-width: 1025px) {
+    /* When collapsed, translate sidebar out of screen */
+    body.sidebar-collapsed .sidebar {
+        transform: translateX(-100%);
+        transition: var(--transition);
+        box-shadow: none;
+    }
+    
+    /* Active class on collapsed sidebar opens it as overlay */
+    body.sidebar-collapsed .sidebar.active {
+        transform: translateX(0);
+        box-shadow: 5px 0 25px rgba(15, 23, 42, 0.15);
+    }
+    
+    /* Remove left margin of main wrapper */
+    body.sidebar-collapsed .main-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+        transition: var(--transition);
+    }
+    
+    /* Show menu button toggle in header */
+    body.sidebar-collapsed #sidebarToggle {
+        display: inline-flex !important;
+    }
+}
+
+/* Hide collapse button on tablet/mobile screens */
+@media (max-width: 1024px) {
+    .sidebar-collapse-btn {
+        display: none !important;
+    }
+}
+

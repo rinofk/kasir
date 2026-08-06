@@ -17,6 +17,9 @@
                     </select>
                     <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-magnifying-glass"></i> Filter</button>
                 </form>
+                <button type="button" id="btnBulkPrintLabels" class="btn btn-secondary" style="display: none; align-items: center; gap: 8px;" onclick="printSelectedLabels()">
+                    <i class="fa-solid fa-tags" style="color: var(--accent);"></i> Cetak Label (<span id="selectedCount">0</span>)
+                </button>
                 <button onclick="openAddModal()" class="btn btn-primary">
                     <i class="fa-solid fa-plus"></i> Tambah Produk
                 </button>
@@ -27,18 +30,20 @@
                 <table class="table">
                     <thead>
                         <tr>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllProducts" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"></th>
                             <th>Kode/Barcode</th>
                             <th>Nama Produk</th>
                             <th>Kategori</th>
                             <th>Harga Beli</th>
                             <th>Harga Jual</th>
                             <th>Stok</th>
-                            <th style="width: 150px;">Aksi</th>
+                            <th style="width: 170px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($products as $product)
                             <tr>
+                                <td style="text-align: center;"><input type="checkbox" class="product-select-checkbox" value="{{ $product->id }}" onchange="updateSelectedCount()" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"></td>
                                 <td><code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600;">{{ $product->code }}</code></td>
                                 <td><strong>{{ $product->name }}</strong></td>
                                 <td>{{ $product->category->name }}</td>
@@ -55,6 +60,9 @@
                                 </td>
                                 <td>
                                     <div style="display: flex; gap: 8px;">
+                                        <a href="{{ route('products.print-labels', ['product_ids' => $product->id]) }}" class="btn btn-secondary" style="padding: 6px 10px; display: flex; align-items: center; justify-content: center;" title="Cetak Label Harga" target="_blank">
+                                            <i class="fa-solid fa-barcode"></i>
+                                        </a>
                                         <button onclick="openEditModal({{ json_encode($product) }})" class="btn btn-secondary" style="padding: 6px 10px;" title="Edit">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
@@ -70,7 +78,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 32px;">
+                                <td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 32px;">
                                     Produk tidak ditemukan.
                                 </td>
                             </tr>
@@ -345,6 +353,54 @@
                 event.target.classList.remove('active');
                 closeCameraScanner();
             }
+        }
+
+        // Logic for Bulk Price Label Printing
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.product-select-checkbox:checked');
+            const count = checkboxes.length;
+            const bulkBtn = document.getElementById('btnBulkPrintLabels');
+            const selectedCountSpan = document.getElementById('selectedCount');
+
+            if (selectedCountSpan) {
+                selectedCountSpan.textContent = count;
+            }
+
+            if (bulkBtn) {
+                if (count > 0) {
+                    bulkBtn.style.display = 'inline-flex';
+                } else {
+                    bulkBtn.style.display = 'none';
+                }
+            }
+        }
+
+        // Toggle Select All
+        const selectAll = document.getElementById('selectAllProducts');
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.product-select-checkbox');
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+                updateSelectedCount();
+            });
+        }
+
+        function printSelectedLabels() {
+            const checkedBoxes = document.querySelectorAll('.product-select-checkbox:checked');
+            const ids = Array.from(checkedBoxes).map(cb => cb.value);
+            
+            if (ids.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Pilih Produk',
+                    text: 'Silakan pilih produk terlebih dahulu.',
+                    confirmButtonColor: '#4f46e5'
+                });
+                return;
+            }
+            
+            const url = "{{ route('products.print-labels') }}?product_ids=" + ids.join(',');
+            window.open(url, '_blank');
         }
     </script>
 @endsection

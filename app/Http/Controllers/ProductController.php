@@ -68,4 +68,19 @@ class ProductController extends Controller
         $product->delete();
         return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
     }
+
+    public function printLabels(Request $request)
+    {
+        $productIds = $request->input('product_ids', []);
+        if (is_string($productIds)) {
+            $productIds = explode(',', $productIds);
+        }
+
+        $products = Product::whereIn('id', $productIds)->with('category')->orderBy('name')->get();
+        if ($products->isEmpty()) {
+            return redirect()->route('products.index')->with('error', 'Silakan pilih minimal satu produk untuk mencetak label.');
+        }
+
+        return view('products.print_labels', compact('products'));
+    }
 }
