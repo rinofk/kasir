@@ -116,11 +116,11 @@
                                 <td><strong>Rp {{ number_format($product->selling_price, 0, ',', '.') }}</strong></td>
                                 <td>
                                     @if($product->stock <= 5)
-                                        <span class="badge badge-danger" style="font-size: 13px;">{{ (float)$product->stock }} {{ $product->unit }} (Kritis)</span>
+                                        <span class="badge badge-danger" style="font-size: 13px;">{{ rtrim(rtrim(number_format($product->stock, 3, ',', '.'), '0'), ',') }} {{ $product->unit }} (Kritis)</span>
                                     @elseif($product->stock <= 15)
-                                        <span class="badge badge-warning" style="font-size: 13px;">{{ (float)$product->stock }} {{ $product->unit }} (Menipis)</span>
+                                        <span class="badge badge-warning" style="font-size: 13px;">{{ rtrim(rtrim(number_format($product->stock, 3, ',', '.'), '0'), ',') }} {{ $product->unit }} (Menipis)</span>
                                     @else
-                                        <span class="badge badge-success" style="font-size: 13px;">{{ (float)$product->stock }} {{ $product->unit }}</span>
+                                        <span class="badge badge-success" style="font-size: 13px;">{{ rtrim(rtrim(number_format($product->stock, 3, ',', '.'), '0'), ',') }} {{ $product->unit }}</span>
                                     @endif
                                 </td>
                                 <td>
@@ -196,17 +196,17 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
                             <label for="add_purchase_price" class="form-label">Harga Beli (Rp)</label>
-                            <input type="number" id="add_purchase_price" name="purchase_price" class="form-control" required min="0" placeholder="60000">
+                            <input type="text" inputmode="numeric" id="add_purchase_price" name="purchase_price" class="form-control" required placeholder="60.000">
                         </div>
                         <div class="form-group">
                             <label for="add_selling_price" class="form-label">Harga Jual (Rp)</label>
-                            <input type="number" id="add_selling_price" name="selling_price" class="form-control" required min="0" placeholder="68000">
+                            <input type="text" inputmode="numeric" id="add_selling_price" name="selling_price" class="form-control" required placeholder="68.000">
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
                             <label for="add_stock" class="form-label">Jumlah Stok Awal</label>
-                            <input type="number" id="add_stock" name="stock" class="form-control" required min="0" placeholder="50">
+                            <input type="text" inputmode="numeric" id="add_stock" name="stock" class="form-control" required placeholder="50">
                         </div>
                         <div class="form-group">
                             <label for="add_unit" class="form-label">Satuan</label>
@@ -257,17 +257,17 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
                             <label for="edit_purchase_price" class="form-label">Harga Beli (Rp)</label>
-                            <input type="number" id="edit_purchase_price" name="purchase_price" class="form-control" required min="0">
+                            <input type="text" inputmode="numeric" id="edit_purchase_price" name="purchase_price" class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label for="edit_selling_price" class="form-label">Harga Jual (Rp)</label>
-                            <input type="number" id="edit_selling_price" name="selling_price" class="form-control" required min="0">
+                            <input type="text" inputmode="numeric" id="edit_selling_price" name="selling_price" class="form-control" required>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
                             <label for="edit_stock" class="form-label">Stok</label>
-                            <input type="number" id="edit_stock" name="stock" class="form-control" required min="0">
+                            <input type="text" inputmode="numeric" id="edit_stock" name="stock" class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label for="edit_unit" class="form-label">Satuan</label>
@@ -306,6 +306,19 @@
     <script>
         let html5QrcodeScanner = null;
         let activeTargetInputId = null;
+
+        function formatFloatToIndonesian(val) {
+            if (val === undefined || val === null || val === '') return '';
+            let num = parseFloat(val);
+            if (isNaN(num)) return '';
+            let str = String(num);
+            let parts = str.split('.');
+            let integerPart = parseInt(parts[0]).toLocaleString('id-ID');
+            if (parts.length > 1) {
+                return integerPart + ',' + parts[1];
+            }
+            return integerPart;
+        }
 
         function playBeep() {
             try {
@@ -425,9 +438,9 @@
                         // Autofill form
                         document.getElementById('add_name').value = product.name;
                         document.getElementById('add_category_id').value = product.category_id;
-                        document.getElementById('add_purchase_price').value = Math.round(product.purchase_price);
-                        document.getElementById('add_selling_price').value = Math.round(product.selling_price);
-                        document.getElementById('add_stock').value = parseFloat(product.stock);
+                        document.getElementById('add_purchase_price').value = Math.round(product.purchase_price).toLocaleString('id-ID');
+                        document.getElementById('add_selling_price').value = Math.round(product.selling_price).toLocaleString('id-ID');
+                        document.getElementById('add_stock').value = formatFloatToIndonesian(product.stock);
                         document.getElementById('add_unit').value = product.unit || 'pcs';
 
                         // Transform form to Update
@@ -525,9 +538,9 @@
             document.getElementById('edit_code').value = product.code;
             document.getElementById('edit_name').value = product.name;
             document.getElementById('edit_category_id').value = product.category_id;
-            document.getElementById('edit_purchase_price').value = Math.round(product.purchase_price);
-            document.getElementById('edit_selling_price').value = Math.round(product.selling_price);
-            document.getElementById('edit_stock').value = parseFloat(product.stock);
+            document.getElementById('edit_purchase_price').value = Math.round(product.purchase_price).toLocaleString('id-ID');
+            document.getElementById('edit_selling_price').value = Math.round(product.selling_price).toLocaleString('id-ID');
+            document.getElementById('edit_stock').value = formatFloatToIndonesian(product.stock);
             document.getElementById('edit_unit').value = product.unit || 'pcs';
             document.getElementById('editModal').classList.add('active');
         }
@@ -584,6 +597,108 @@
                 });
                 productSearchInput.addEventListener('input', function() {
                     clearSearchBtn.style.display = this.value.trim().length > 0 ? 'flex' : 'none';
+                });
+            }
+
+            // Live number formatting helper for Indonesian float (thousands: ., decimals: ,)
+            const formatIndonesianNumber = function(value) {
+                let clean = value.replace(/[^0-9.,]/g, '');
+                let lastDot = clean.lastIndexOf('.');
+                let lastComma = clean.lastIndexOf(',');
+                let decimalSep = null;
+                let decimalIdx = -1;
+                
+                if (lastComma > -1 && lastComma > lastDot) {
+                    decimalSep = ',';
+                    decimalIdx = lastComma;
+                } else if (lastDot > -1 && lastDot > lastComma) {
+                    let parts = clean.split('.');
+                    if (parts.length === 2 && parts[1].length !== 3) {
+                        decimalSep = '.';
+                        decimalIdx = lastDot;
+                    }
+                }
+                
+                let integerPart = '';
+                let decimalPart = '';
+                
+                if (decimalIdx > -1) {
+                    integerPart = clean.slice(0, decimalIdx).replace(/[^0-9]/g, '');
+                    decimalPart = clean.slice(decimalIdx + 1).replace(/[^0-9]/g, '').slice(0, 3);
+                } else {
+                    integerPart = clean.replace(/[^0-9]/g, '');
+                }
+                
+                if (integerPart !== '') {
+                    integerPart = parseInt(integerPart).toLocaleString('id-ID');
+                }
+                
+                if (decimalIdx > -1) {
+                    return integerPart + ',' + decimalPart;
+                }
+                return integerPart;
+            };
+
+            // Number formatting for purchase and selling price inputs
+            const priceInputs = [
+                document.getElementById('add_purchase_price'),
+                document.getElementById('add_selling_price'),
+                document.getElementById('edit_purchase_price'),
+                document.getElementById('edit_selling_price')
+            ];
+
+            priceInputs.forEach(input => {
+                if (input) {
+                    input.addEventListener('input', function() {
+                        let cleanVal = this.value.replace(/[^0-9]/g, '');
+                        if (cleanVal !== '') {
+                            this.value = parseInt(cleanVal).toLocaleString('id-ID');
+                        } else {
+                            this.value = '';
+                        }
+                    });
+                }
+            });
+
+            // Live formatting for stock inputs (supporting decimal)
+            const stockInputs = [
+                document.getElementById('add_stock'),
+                document.getElementById('edit_stock')
+            ];
+
+            stockInputs.forEach(input => {
+                if (input) {
+                    input.addEventListener('input', function() {
+                        this.value = formatIndonesianNumber(this.value);
+                    });
+                }
+            });
+
+            // Strip dot separators before submitting forms
+            const stripFormatting = function(form) {
+                form.querySelectorAll('input[name="purchase_price"], input[name="selling_price"]').forEach(input => {
+                    input.value = input.value.replace(/[^0-9]/g, '');
+                });
+                form.querySelectorAll('input[name="stock"]').forEach(input => {
+                    let val = input.value.trim();
+                    if (val !== '') {
+                        // Remove all dots (thousands separator) and convert comma to dot (decimal separator)
+                        input.value = val.replace(/\./g, '').replace(/,/g, '.');
+                    }
+                });
+            };
+
+            const addForm = document.getElementById('addForm');
+            if (addForm) {
+                addForm.addEventListener('submit', function() {
+                    stripFormatting(this);
+                });
+            }
+
+            const editForm = document.getElementById('editForm');
+            if (editForm) {
+                editForm.addEventListener('submit', function() {
+                    stripFormatting(this);
                 });
             }
         });

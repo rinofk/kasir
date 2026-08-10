@@ -293,9 +293,9 @@
                                 @if($prod->stock <= 0)
                                     <span style="color: var(--danger); font-weight: 700;">Habis</span>
                                 @elseif($prod->stock <= 5)
-                                    <span style="color: var(--warning); font-weight: 600;">Stok: {{ (float)$prod->stock }} {{ $prod->unit }}</span>
+                                    <span style="color: var(--warning); font-weight: 600;">Stok: {{ rtrim(rtrim(number_format($prod->stock, 3, ',', '.'), '0'), ',') }} {{ $prod->unit }}</span>
                                 @else
-                                    <span style="color: var(--text-secondary);">Stok: <strong class="stock-num">{{ (float)$prod->stock }}</strong> {{ $prod->unit }}</span>
+                                    <span style="color: var(--text-secondary);">Stok: <strong class="stock-num">{{ rtrim(rtrim(number_format($prod->stock, 3, ',', '.'), '0'), ',') }}</strong> {{ $prod->unit }}</span>
                                 @endif
                             </div>
                         </div>
