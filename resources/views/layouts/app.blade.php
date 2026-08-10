@@ -16,6 +16,42 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ file_exists(public_path('css/app.css')) ? filemtime(public_path('css/app.css')) : time() }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .header-user-date-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .header-user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        
+        .mobile-logout-btn {
+            display: none !important;
+        }
+        
+        @media (max-width: 768px) {
+            .header-right {
+                display: flex !important;
+            }
+            .header-user-date-wrapper {
+                display: none !important;
+            }
+            .mobile-logout-btn {
+                display: flex !important;
+            }
+        }
+    </style>
     @yield('styles')
 </head>
 <body>
@@ -134,14 +170,21 @@
                     @yield('header_title')
                 </div>
             </div>
-            <div class="header-right" style="display: flex; align-items: center; gap: 16px;">
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-secondary); background: var(--bg-secondary); padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                    <i class="fa-solid fa-user-tag" style="color: var(--accent);"></i>
-                    <span>{{ Auth::user()->name }}</span>
+            <div class="header-right">
+                <!-- Mobile Logout Button (Visible only on mobile) -->
+                <button type="button" class="btn btn-secondary mobile-logout-btn" onclick="confirmLogout(event)" style="display: none; padding: 10px 14px; align-items: center; justify-content: center; color: var(--danger); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);" title="Keluar">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+
+                <div class="header-user-date-wrapper">
+                    <div class="header-user-badge">
+                        <i class="fa-solid fa-user-tag" style="color: var(--accent);"></i>
+                        <span>{{ Auth::user()->name }}</span>
+                    </div>
+                    <span class="badge badge-primary header-date-badge">
+                        <i class="fa-regular fa-calendar"></i> &nbsp;<span id="header-date"></span>
+                    </span>
                 </div>
-                <span class="badge badge-primary">
-                    <i class="fa-regular fa-calendar"></i> &nbsp;<span id="header-date"></span>
-                </span>
             </div>
         </header>
 
@@ -155,6 +198,16 @@
             @if(session('error'))
                 <div class="alert alert-danger">
                     {{ session('error') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul style="margin: 0; padding-left: 16px;">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
 

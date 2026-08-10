@@ -28,6 +28,17 @@
     #filter_category_select {
         width: 180px;
     }
+    .clickable-product-detail {
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .clickable-product-detail:hover {
+        opacity: 0.75;
+        text-decoration: underline;
+    }
+    .col-show-mobile {
+        display: none !important;
+    }
 
     @media (max-width: 768px) {
         .category-tabs {
@@ -37,6 +48,12 @@
             display: block !important;
             width: 100% !important;
         }
+        .col-hide-mobile {
+            display: none !important;
+        }
+        .col-show-mobile {
+            display: table-cell !important;
+        }
     }
     @media (min-width: 769px) {
         #filter_category_select {
@@ -45,6 +62,20 @@
         .category-tabs {
             display: flex !important;
         }
+    }
+
+    /* Modal scroll overrides to prevent unreachable save buttons on mobile/small screens */
+    .modal {
+        overflow-y: auto !important;
+        padding: 16px 8px !important;
+    }
+    .modal.active {
+        display: flex !important;
+        align-items: flex-start !important;
+    }
+    .modal-content {
+        margin: 20px auto !important;
+        max-height: none !important;
     }
 </style>
 @endsection
@@ -95,26 +126,51 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllProducts" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"></th>
-                            <th>Kode/Barcode</th>
-                            <th>Nama Produk</th>
-                            <th>Kategori</th>
-                            <th>Harga Beli</th>
-                            <th>Harga Jual</th>
-                            <th>Stok</th>
-                            <th style="width: 170px;">Aksi</th>
+                            <th class="col-hide-mobile" style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllProducts" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"></th>
+                            <th style="width: 60px; text-align: center;">Foto</th>
+                            <th class="col-hide-mobile">Kode/Barcode</th>
+                            <th class="col-hide-mobile">Nama Produk</th>
+                            <th class="col-show-mobile">Produk</th>
+                            <th class="col-hide-mobile">Kategori</th>
+                            <th class="col-hide-mobile">Harga Beli</th>
+                             <th style="text-align: right;">Harga Jual</th>
+                            <th class="col-hide-mobile">Stok</th>
+                            <th class="col-hide-mobile" style="width: 170px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($products as $product)
                             <tr>
-                                <td style="text-align: center;"><input type="checkbox" class="product-select-checkbox" value="{{ $product->id }}" onchange="updateSelectedCount()" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"></td>
-                                <td><code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600;">{{ $product->code }}</code></td>
-                                <td><strong>{{ $product->name }}</strong></td>
-                                <td>{{ $product->category->name }}</td>
-                                <td>Rp {{ number_format($product->purchase_price, 0, ',', '.') }}</td>
-                                <td><strong>Rp {{ number_format($product->selling_price, 0, ',', '.') }}</strong></td>
-                                <td>
+                                <td class="col-hide-mobile" style="text-align: center;"><input type="checkbox" class="product-select-checkbox" value="{{ $product->id }}" onchange="updateSelectedCount()" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"></td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    @if($product->image && file_exists(public_path($product->image)))
+                                        <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                                    @else
+                                        <div style="width: 40px; height: 40px; border-radius: 4px; border: 1px dashed var(--border-color); background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="fa-solid fa-box" style="font-size: 14px; color: var(--text-secondary); opacity: 0.5;"></i>
+                                        </div>
+                                    @endif
+                                </td>
+                                <td class="col-hide-mobile">
+                                    <span class="clickable-product-detail" onclick="openShowModal({{ json_encode($product) }})">
+                                        <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: var(--accent);">{{ $product->code }}</code>
+                                    </span>
+                                </td>
+                                <td class="col-hide-mobile">
+                                    <span class="clickable-product-detail" onclick="openShowModal({{ json_encode($product) }})">
+                                        <strong>{{ $product->name }}</strong>
+                                    </span>
+                                </td>
+                                <td class="col-show-mobile" style="vertical-align: middle;">
+                                    <span class="clickable-product-detail" onclick="openShowModal({{ json_encode($product) }})" style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                        <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: 600; color: var(--accent); font-size: 11px;">{{ $product->code }}</code>
+                                        <strong style="font-size: 14px; color: var(--text-primary);">{{ $product->name }}</strong>
+                                    </span>
+                                </td>
+                                <td class="col-hide-mobile">{{ $product->category->name }}</td>
+                                <td class="col-hide-mobile">Rp {{ number_format($product->purchase_price, 0, ',', '.') }}</td>
+                                 <td style="white-space: nowrap; text-align: right;"><strong>Rp {{ number_format($product->selling_price, 0, ',', '.') }}</strong></td>
+                                <td class="col-hide-mobile">
                                     @if($product->stock <= 5)
                                         <span class="badge badge-danger" style="font-size: 13px;">{{ rtrim(rtrim(number_format($product->stock, 3, ',', '.'), '0'), ',') }} {{ $product->unit }} (Kritis)</span>
                                     @elseif($product->stock <= 15)
@@ -123,8 +179,11 @@
                                         <span class="badge badge-success" style="font-size: 13px;">{{ rtrim(rtrim(number_format($product->stock, 3, ',', '.'), '0'), ',') }} {{ $product->unit }}</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="col-hide-mobile">
                                     <div style="display: flex; gap: 8px;">
+                                        <button onclick="openShowModal({{ json_encode($product) }})" class="btn" style="padding: 6px 10px; background-color: rgba(79, 70, 229, 0.08); color: var(--accent); border: 1px solid rgba(79, 70, 229, 0.15); display: flex; align-items: center; justify-content: center;" title="Detail Produk">
+                                            <i class="fa-solid fa-circle-info"></i>
+                                        </button>
                                         <a href="{{ route('products.print-labels', ['product_ids' => $product->id]) }}" class="btn btn-secondary" style="padding: 6px 10px; display: flex; align-items: center; justify-content: center;" title="Cetak Label Harga" target="_blank">
                                             <i class="fa-solid fa-barcode"></i>
                                         </a>
@@ -167,7 +226,7 @@
                 <h3 class="modal-title">Tambah Produk Baru</h3>
                 <button onclick="closeAddModal()" class="modal-close">&times;</button>
             </div>
-            <form id="addForm" action="{{ route('products.store') }}" method="POST">
+            <form id="addForm" action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" id="add_method" name="_method" value="POST" disabled>
                 <div class="modal-body">
@@ -175,6 +234,9 @@
                         <label for="add_code" class="form-label">Kode Produk / Barcode</label>
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="add_code" name="code" class="form-control" required placeholder="Contoh: BRS5K" style="flex-grow: 1;">
+                            <button type="button" id="clear_add_code" onclick="clearAddCodeInput()" class="btn btn-secondary" style="padding: 10px 14px; display: none; color: var(--danger); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);" title="Bersihkan">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
                             <button type="button" onclick="startCameraScanner('add_code')" class="btn btn-secondary" style="padding: 10px 14px;" title="Scan menggunakan kamera HP">
                                 <i class="fa-solid fa-camera"></i>
                             </button>
@@ -213,6 +275,14 @@
                             <input type="text" id="add_unit" name="unit" class="form-control" required placeholder="Contoh: pcs" value="pcs">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="add_image" class="form-label">Foto Produk (Opsional)</label>
+                        <div id="add_image_preview_container" style="margin-bottom: 12px; display: none;">
+                            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Foto Saat Ini:</p>
+                            <img id="add_image_preview" src="" alt="Preview" style="max-width: 100px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                        </div>
+                        <input type="file" id="add_image" name="image" class="form-control" accept="image/*" capture="environment">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="closeAddModal()" class="btn btn-secondary">Batal</button>
@@ -229,7 +299,7 @@
                 <h3 class="modal-title">Edit Produk</h3>
                 <button onclick="closeEditModal()" class="modal-close">&times;</button>
             </div>
-            <form id="editForm" method="POST">
+            <form id="editForm" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="modal-body">
@@ -274,12 +344,84 @@
                             <input type="text" id="edit_unit" name="unit" class="form-control" required placeholder="Contoh: pcs">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="edit_image" class="form-label">Ganti Foto Produk (Opsional)</label>
+                        <div id="edit_image_preview_container" style="margin-bottom: 12px; display: none;">
+                            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Foto Saat Ini:</p>
+                            <img id="edit_image_preview" src="" alt="Preview" style="max-width: 100px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                        </div>
+                        <input type="file" id="edit_image" name="image" class="form-control" accept="image/*" capture="environment">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" onclick="closeEditModal()" class="btn btn-secondary">Batal</button>
                     <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Show Product Modal -->
+    <div id="showModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fa-solid fa-circle-info" style="color: var(--accent);"></i> Detail Produk</h3>
+                <button onclick="closeShowModal()" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" style="padding-top: 16px;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 24px;">
+                    <div style="width: 150px; height: 150px; border-radius: var(--radius-md); border: 1px solid var(--border-color); overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--bg-secondary); cursor: pointer;" title="Klik untuk memperbesar gambar">
+                        <img id="show_image" src="" alt="Foto Produk" style="width: 100%; height: 100%; object-fit: cover; display: none;" onclick="openImagePreviewModal(this.src)">
+                        <i id="show_image_placeholder" class="fa-solid fa-box" style="font-size: 48px; color: var(--text-secondary); opacity: 0.5;"></i>
+                    </div>
+                    <div style="text-align: center;">
+                        <h4 id="show_name" style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;"></h4>
+                        <code id="show_code" style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;"></code>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                        <span style="color: var(--text-secondary);">Kategori</span>
+                        <strong id="show_category" style="color: var(--text-primary);"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                        <span style="color: var(--text-secondary);">Satuan</span>
+                        <strong id="show_unit" style="color: var(--text-primary);"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                        <span style="color: var(--text-secondary);">Stok Tersedia</span>
+                        <strong id="show_stock" style="color: var(--text-primary);"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 14px; border-top: 1px dashed var(--border-color); padding-top: 12px;">
+                        <span style="color: var(--text-secondary);">Harga Beli</span>
+                        <strong id="show_purchase_price" style="color: var(--text-primary);"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                        <span style="color: var(--text-secondary);">Harga Jual</span>
+                        <strong id="show_selling_price" style="color: var(--accent); font-weight: 700;"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 14px; background: rgba(34, 197, 94, 0.08); padding: 8px 12px; border-radius: 6px;">
+                        <span style="color: var(--success); font-weight: 600;">Keuntungan (Profit)</span>
+                        <strong id="show_profit" style="color: var(--success); font-weight: 700;"></strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    <button onclick="editProductFromDetail()" class="btn btn-primary" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px;">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit
+                    </button>
+                    <form id="show_delete_form" method="POST" class="delete-form" style="margin: 0; flex-grow: 1;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px;">
+                            <i class="fa-solid fa-trash"></i> Hapus
+                        </button>
+                    </form>
+                </div>
+                <button onclick="closeShowModal()" class="btn btn-secondary" style="width: 100%; padding: 10px 16px;">Tutup</button>
+            </div>
         </div>
     </div>
 
@@ -297,6 +439,14 @@
                     <button type="button" onclick="closeCameraScanner()" class="btn btn-secondary" style="width: 100%; padding: 12px;">Tutup Kamera</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal (Lightbox) -->
+    <div id="imagePreviewModal" class="modal" onclick="closeImagePreviewModal()" style="background: rgba(0, 0, 0, 0.85); z-index: 1100;">
+        <div style="position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; font-weight: bold;">&times;</div>
+        <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 20px;">
+            <img id="lightbox_image" src="" alt="Full View" style="max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); cursor: zoom-out;">
         </div>
     </div>
 @endsection
@@ -443,6 +593,15 @@
                         document.getElementById('add_stock').value = formatFloatToIndonesian(product.stock);
                         document.getElementById('add_unit').value = product.unit || 'pcs';
 
+                         const addPreviewContainer = document.getElementById('add_image_preview_container');
+                         const addPreviewImg = document.getElementById('add_image_preview');
+                         if (product.image) {
+                             addPreviewImg.src = `/${product.image}`;
+                             addPreviewContainer.style.display = 'block';
+                         } else {
+                             addPreviewContainer.style.display = 'none';
+                         }
+
                         // Transform form to Update
                         const form = document.getElementById('addForm');
                         form.action = `/products/${product.id}`;
@@ -473,11 +632,199 @@
                         }
                     } else {
                         resetAddFormToStore();
+                        fetchExternalProductInfo(code);
                     }
                 })
                 .catch(err => {
                     console.error('Error checking product code:', err);
                 });
+        }
+
+        function fetchExternalProductInfo(code) {
+            const nameInput = document.getElementById('add_name');
+            if (!nameInput) return;
+
+            nameInput.placeholder = "Mencari produk di database internet...";
+            nameInput.disabled = true;
+
+            // Step 1: Try specialized Indonesian Product API (ariph007 database with 50K+ products)
+            fetch(`https://api-products.alpha-projects.cloud/api/v1/products-barcode?barcode=${encodeURIComponent(code)}&generateBarcode=false`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.data) {
+                        const product = data.data;
+                        const externalProduct = {
+                            product_name: product.name,
+                            image_url: product.image
+                        };
+                        populateExternalProductData(externalProduct);
+                    } else {
+                        // Fallback to Open Food Facts Indonesian endpoint
+                        fallbackToOpenFoodFacts(code);
+                    }
+                })
+                .catch(err => {
+                    // Fallback to Open Food Facts on error
+                    fallbackToOpenFoodFacts(code);
+                });
+        }
+
+        function fallbackToOpenFoodFacts(code) {
+            // Step 2: Try Indonesian Food Facts
+            fetch(`https://id.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`)
+                .then(response => response.json())
+                .then(data => {
+                    if ((data.status === 1 || data.status === "1") && data.product) {
+                        populateExternalProductData(data.product);
+                    } else {
+                        // Step 3: Fallback to World Food Facts
+                        fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`)
+                            .then(response => response.json())
+                            .then(worldData => {
+                                if ((worldData.status === 1 || worldData.status === "1") && worldData.product) {
+                                    populateExternalProductData(worldData.product);
+                                } else {
+                                    // Step 4: Fallback to Open Products Facts (Medicines, Cosmetics, Household items)
+                                    fetch(`https://world.openproductsfacts.org/api/v2/product/${encodeURIComponent(code)}.json`)
+                                        .then(response => response.json())
+                                        .then(prodData => {
+                                            if ((prodData.status === 1 || prodData.status === "1") && prodData.product) {
+                                                populateExternalProductData(prodData.product);
+                                            } else {
+                                                showExternalProductNotFound();
+                                            }
+                                        })
+                                        .catch(err => {
+                                            showExternalProductNotFound();
+                                        });
+                                }
+                            })
+                            .catch(err => {
+                                showExternalProductNotFound();
+                            });
+                    }
+                })
+                .catch(err => {
+                    // Try world food facts directly on initial error
+                    fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json`)
+                        .then(response => response.json())
+                        .then(worldData => {
+                            if ((worldData.status === 1 || worldData.status === "1") && worldData.product) {
+                                populateExternalProductData(worldData.product);
+                            } else {
+                                // Fallback to Open Products Facts on world food facts error/not found
+                                fetch(`https://world.openproductsfacts.org/api/v2/product/${encodeURIComponent(code)}.json`)
+                                    .then(response => response.json())
+                                    .then(prodData => {
+                                        if ((prodData.status === 1 || prodData.status === "1") && prodData.product) {
+                                            populateExternalProductData(prodData.product);
+                                        } else {
+                                            showExternalProductNotFound();
+                                        }
+                                    })
+                                    .catch(prodErr => {
+                                        showExternalProductNotFound();
+                                    });
+                            }
+                        })
+                        .catch(worldErr => {
+                            showExternalProductNotFound();
+                        });
+                });
+        }
+
+        function populateExternalProductData(product) {
+            const nameInput = document.getElementById('add_name');
+            if (nameInput) {
+                nameInput.disabled = false;
+                nameInput.placeholder = "Contoh: Beras Pandan Wangi 5Kg";
+
+                const brand = product.brands ? product.brands.trim() : '';
+                const pName = product.product_name || product.product_name_id || product.product_name_en || product.generic_name || '';
+                let fullName = pName;
+                if (brand && pName && !pName.toLowerCase().includes(brand.toLowerCase())) {
+                    fullName = brand + ' ' + pName;
+                } else if (!fullName && brand) {
+                    fullName = brand;
+                }
+
+                if (fullName) {
+                    nameInput.value = fullName;
+                }
+            }
+
+            // Autofill UOM/Unit if available
+            if (product.uom) {
+                const addUnitInput = document.getElementById('add_unit');
+                if (addUnitInput) {
+                    addUnitInput.value = product.uom.toLowerCase();
+                }
+            }
+
+            const imageUrl = product.image_front_url || product.image_url || product.image_small_url || product.image_front_small_url;
+            if (imageUrl) {
+                const addPreviewContainer = document.getElementById('add_image_preview_container');
+                const addPreviewImg = document.getElementById('add_image_preview');
+                if (addPreviewContainer && addPreviewImg) {
+                    addPreviewImg.src = imageUrl;
+                    addPreviewContainer.style.display = 'block';
+
+                    const previewTitle = addPreviewContainer.querySelector('p');
+                    if (previewTitle) {
+                        previewTitle.textContent = "Foto Produk (Internet):";
+                    }
+                }
+
+                let hiddenImgInput = document.getElementById('add_fetched_image_url');
+                if (!hiddenImgInput) {
+                    hiddenImgInput = document.createElement('input');
+                    hiddenImgInput.type = 'hidden';
+                    hiddenImgInput.id = 'add_fetched_image_url';
+                    hiddenImgInput.name = 'fetched_image_url';
+                    document.getElementById('addForm').appendChild(hiddenImgInput);
+                }
+                hiddenImgInput.value = imageUrl;
+            }
+
+            let infoAlert = document.getElementById('add_code_alert');
+            if (infoAlert) infoAlert.remove();
+
+            infoAlert = document.createElement('div');
+            infoAlert.id = 'add_code_alert';
+            infoAlert.className = 'alert alert-info';
+            infoAlert.style.marginTop = '8px';
+            infoAlert.style.padding = '8px 12px';
+            infoAlert.style.fontSize = '13px';
+            infoAlert.style.borderRadius = 'var(--radius-sm)';
+            infoAlert.style.background = 'rgba(34, 197, 94, 0.08)';
+            infoAlert.style.color = 'var(--success)';
+            infoAlert.style.border = '1px solid rgba(34, 197, 94, 0.15)';
+            infoAlert.innerHTML = '<i class="fa-solid fa-circle-check"></i> Produk ditemukan di database internet! Mengisi nama & foto otomatis.';
+            document.getElementById('add_code').parentNode.parentNode.appendChild(infoAlert);
+        }
+
+        function showExternalProductNotFound() {
+            const nameInput = document.getElementById('add_name');
+            if (nameInput) {
+                nameInput.disabled = false;
+                nameInput.placeholder = "Contoh: Beras Pandan Wangi 5Kg";
+            }
+
+            let infoAlert = document.getElementById('add_code_alert');
+            if (infoAlert) infoAlert.remove();
+
+            infoAlert = document.createElement('div');
+            infoAlert.id = 'add_code_alert';
+            infoAlert.className = 'alert alert-warning';
+            infoAlert.style.marginTop = '8px';
+            infoAlert.style.padding = '8px 12px';
+            infoAlert.style.fontSize = '13px';
+            infoAlert.style.borderRadius = 'var(--radius-sm)';
+            infoAlert.style.background = 'rgba(239, 68, 68, 0.08)';
+            infoAlert.style.color = 'var(--danger)';
+            infoAlert.style.border = '1px solid rgba(239, 68, 68, 0.15)';
+            infoAlert.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Barcode tidak terdaftar di database lokal maupun internet. Silakan ketik nama manual.';
+            document.getElementById('add_code').parentNode.parentNode.appendChild(infoAlert);
         }
 
         function resetAddFormToStore() {
@@ -512,7 +859,35 @@
             if (infoAlert) {
                 infoAlert.remove();
             }
+
+             const addImageInput = document.getElementById('add_image');
+             if (addImageInput) {
+                 addImageInput.value = '';
+             }
+
+             const addPreviewContainer = document.getElementById('add_image_preview_container');
+             if (addPreviewContainer) {
+                 addPreviewContainer.style.display = 'none';
+                 const previewTitle = addPreviewContainer.querySelector('p');
+                 if (previewTitle) {
+                     previewTitle.textContent = "Foto Produk Preview:";
+                 }
+             }
+             const addPreviewImg = document.getElementById('add_image_preview');
+             if (addPreviewImg) {
+                 addPreviewImg.src = '';
+             }
+             const hiddenImgInput = document.getElementById('add_fetched_image_url');
+             if (hiddenImgInput) {
+                 hiddenImgInput.value = '';
+             }
+             const clearAddCodeBtn = document.getElementById('clear_add_code');
+             const addCodeEl = document.getElementById('add_code');
+             if (clearAddCodeBtn) {
+                 clearAddCodeBtn.style.display = (addCodeEl && addCodeEl.value) ? 'inline-block' : 'none';
+             }
         }
+
 
         function openAddModal() {
             resetAddFormToStore();
@@ -542,11 +917,88 @@
             document.getElementById('edit_selling_price').value = Math.round(product.selling_price).toLocaleString('id-ID');
             document.getElementById('edit_stock').value = formatFloatToIndonesian(product.stock);
             document.getElementById('edit_unit').value = product.unit || 'pcs';
-            document.getElementById('editModal').classList.add('active');
+
+             const previewContainer = document.getElementById('edit_image_preview_container');
+             const previewImg = document.getElementById('edit_image_preview');
+             if (product.image) {
+                 previewImg.src = `/${product.image}`;
+                 previewContainer.style.display = 'block';
+             } else {
+                 previewContainer.style.display = 'none';
+             }
+
+             const editImageInput = document.getElementById('edit_image');
+             if (editImageInput) {
+                 editImageInput.value = '';
+             }
+             document.getElementById('editModal').classList.add('active');
         }
 
         function closeEditModal() {
             document.getElementById('editModal').classList.remove('active');
+        }
+
+        let currentDetailProduct = null;
+
+        function openShowModal(product) {
+            currentDetailProduct = product;
+            document.getElementById('show_name').textContent = product.name;
+            document.getElementById('show_code').textContent = product.code;
+            
+            const categoryName = product.category ? product.category.name : 'N/A';
+            document.getElementById('show_category').textContent = categoryName;
+            
+            document.getElementById('show_unit').textContent = product.unit || 'pcs';
+            document.getElementById('show_stock').textContent = formatFloatToIndonesian(product.stock) + ' ' + (product.unit || 'pcs');
+            
+            const purchase = Math.round(product.purchase_price);
+            const selling = Math.round(product.selling_price);
+            const profit = selling - purchase;
+            
+            document.getElementById('show_purchase_price').textContent = 'Rp ' + purchase.toLocaleString('id-ID');
+            document.getElementById('show_selling_price').textContent = 'Rp ' + selling.toLocaleString('id-ID');
+            document.getElementById('show_profit').textContent = 'Rp ' + profit.toLocaleString('id-ID');
+            
+            const imgEl = document.getElementById('show_image');
+            const placeholderEl = document.getElementById('show_image_placeholder');
+            if (product.image) {
+                imgEl.src = `/${product.image}`;
+                imgEl.style.display = 'block';
+                placeholderEl.style.display = 'none';
+            } else {
+                imgEl.style.display = 'none';
+                placeholderEl.style.display = 'block';
+            }
+            
+            // Set dynamic delete form action and message
+            const showDeleteForm = document.getElementById('show_delete_form');
+            if (showDeleteForm) {
+                showDeleteForm.action = `/products/${product.id}`;
+                showDeleteForm.dataset.message = `Apakah Anda yakin ingin menghapus produk '${product.name}' ini?`;
+            }
+            
+            document.getElementById('showModal').classList.add('active');
+        }
+
+        function closeShowModal() {
+            document.getElementById('showModal').classList.remove('active');
+            currentDetailProduct = null;
+        }
+
+        function editProductFromDetail() {
+            if (!currentDetailProduct) return;
+            const product = currentDetailProduct;
+            closeShowModal();
+            openEditModal(product);
+        }
+
+        function openImagePreviewModal(src) {
+            document.getElementById('lightbox_image').src = src;
+            document.getElementById('imagePreviewModal').classList.add('active');
+        }
+
+        function closeImagePreviewModal() {
+            document.getElementById('imagePreviewModal').classList.remove('active');
         }
 
         // Add event listeners on load
@@ -597,6 +1049,18 @@
                 });
                 productSearchInput.addEventListener('input', function() {
                     clearSearchBtn.style.display = this.value.trim().length > 0 ? 'flex' : 'none';
+                });
+            }
+
+            // Clear add barcode input listener
+            const addCodeEl = document.getElementById('add_code');
+            const clearAddCodeBtn = document.getElementById('clear_add_code');
+            if (addCodeEl && clearAddCodeBtn) {
+                addCodeEl.addEventListener('input', function() {
+                    clearAddCodeBtn.style.display = this.value ? 'inline-block' : 'none';
+                });
+                addCodeEl.addEventListener('change', function() {
+                    clearAddCodeBtn.style.display = this.value ? 'inline-block' : 'none';
                 });
             }
 
@@ -756,6 +1220,19 @@
             
             const url = "{{ route('products.print-labels') }}?product_ids=" + ids.join(',');
             window.open(url, '_blank');
+        }
+
+        function clearAddCodeInput() {
+            const addCodeEl = document.getElementById('add_code');
+            if (addCodeEl) {
+                addCodeEl.value = '';
+                const event = new Event('change', { bubbles: true });
+                addCodeEl.dispatchEvent(event);
+                addCodeEl.focus();
+            }
+            resetAddFormToStore();
+            const infoAlert = document.getElementById('add_code_alert');
+            if (infoAlert) infoAlert.remove();
         }
     </script>
 @endsection

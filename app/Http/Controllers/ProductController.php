@@ -41,9 +41,39 @@ class ProductController extends Controller
             'selling_price' => 'required|numeric|min:0',
             'stock' => 'required|numeric|min:0',
             'unit' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:20480',
         ]);
 
-        Product::create($request->all());
+        $data = $request->all();
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('uploads/products'), $imageName);
+            $data['image'] = 'uploads/products/' . $imageName;
+        } elseif ($request->filled('fetched_image_url')) {
+            try {
+                $url = $request->input('fetched_image_url');
+                $contents = @file_get_contents($url);
+                if ($contents) {
+                    $ext = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
+                    if (!in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                        $ext = 'jpg';
+                    }
+                    $imageName = time() . '_' . uniqid() . '.' . $ext;
+                    $path = public_path('uploads/products');
+                    if (!file_exists($path)) {
+                        mkdir($path, 0755, true);
+                    }
+                    file_put_contents($path . '/' . $imageName, $contents);
+                    $data['image'] = 'uploads/products/' . $imageName;
+                }
+            } catch (\Exception $e) {
+                // Fail silently and save without image
+            }
+        }
+
+        Product::create($data);
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan!');
     }
@@ -58,15 +88,57 @@ class ProductController extends Controller
             'selling_price' => 'required|numeric|min:0',
             'stock' => 'required|numeric|min:0',
             'unit' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:20480',
         ]);
 
-        $product->update($request->all());
+        $data = $request->all();
+
+        if ($request->hasFile('image')) {
+            if ($product->image && file_exists(public_path($product->image))) {
+                @unlink(public_path($product->image));
+            }
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('uploads/products'), $imageName);
+            $data['image'] = 'uploads/products/' . $imageName;
+        } elseif ($request->filled('fetched_image_url')) {
+            try {
+                $url = $request->input('fetched_image_url');
+                // Only download if it's different from current image
+                if (!$product->image || strpos($url, $product->image) === false) {
+                    $contents = @file_get_contents($url);
+                    if ($contents) {
+                        if ($product->image && file_exists(public_path($product->image))) {
+                            @unlink(public_path($product->image));
+                        }
+                        $ext = pathinfo(parse_url($url, PHP_URL_PATH), PATHINFO_EXTENSION) ?: 'jpg';
+                        if (!in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                            $ext = 'jpg';
+                        }
+                        $imageName = time() . '_' . uniqid() . '.' . $ext;
+                        $path = public_path('uploads/products');
+                        if (!file_exists($path)) {
+                            mkdir($path, 0755, true);
+                        }
+                        file_put_contents($path . '/' . $imageName, $contents);
+                        $data['image'] = 'uploads/products/' . $imageName;
+                    }
+                }
+            } catch (\Exception $e) {
+                // Fail silently and update without image
+            }
+        }
+
+        $product->update($data);
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui!');
     }
 
     public function destroy(Product $product)
     {
+        if ($product->image && file_exists(public_path($product->image))) {
+            @unlink(public_path($product->image));
+        }
         $product->delete();
         return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
     }

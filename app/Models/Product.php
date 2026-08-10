@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['category_id', 'code', 'name', 'purchase_price', 'selling_price', 'stock', 'unit'])]
+#[Fillable(['category_id', 'code', 'name', 'purchase_price', 'selling_price', 'stock', 'unit', 'image'])]
 class Product extends Model
 {
     public function category(): BelongsTo
