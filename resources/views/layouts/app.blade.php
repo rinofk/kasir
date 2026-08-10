@@ -134,7 +134,11 @@
                     @yield('header_title')
                 </div>
             </div>
-            <div class="header-right">
+            <div class="header-right" style="display: flex; align-items: center; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-secondary); background: var(--bg-secondary); padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <i class="fa-solid fa-user-tag" style="color: var(--accent);"></i>
+                    <span>{{ Auth::user()->name }}</span>
+                </div>
                 <span class="badge badge-primary">
                     <i class="fa-regular fa-calendar"></i> &nbsp;<span id="header-date"></span>
                 </span>
