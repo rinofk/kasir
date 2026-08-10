@@ -36,7 +36,7 @@
                                     <td><strong>{{ $detail->product_id ? ($detail->product->name ?? 'Produk Telah Dihapus') : $detail->custom_name }}</strong></td>
                                     <td>{{ $detail->product_id ? ($detail->product->category->name ?? 'N/A') : 'Manual' }}</td>
                                     <td style="text-align: right;">Rp {{ number_format($detail->price, 0, ',', '.') }}</td>
-                                    <td style="text-align: center;">{{ $detail->quantity }}</td>
+                                    <td style="text-align: center;">{{ (float) $detail->quantity }}</td>
                                     <td style="text-align: right;"><strong>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</strong></td>
                                 </tr>
                             @endforeach

@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
     // Master CRUD Resource Routes protected by specific Spatie permissions
     Route::resource('categories', CategoryController::class)->middleware('permission:manage categories');
     Route::get('/products/print-labels', [ProductController::class, 'printLabels'])->name('products.print-labels')->middleware('permission:manage products');
+    Route::get('/products/search-by-code/{code}', [ProductController::class, 'searchByCode'])->name('products.search-by-code')->middleware('permission:manage products');
     Route::resource('products', ProductController::class)->middleware('permission:manage products');
     Route::resource('users', UserController::class)->middleware('permission:manage users');
     Route::resource('roles', RoleController::class)->middleware('permission:manage users');

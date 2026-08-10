@@ -3,19 +3,72 @@
 @section('title', 'Produk')
 @section('header_title', 'Kelola Produk & Inventoris')
 
+@section('styles')
+<style>
+    .cat-tab.active {
+        background-color: var(--accent) !important;
+        color: #ffffff !important;
+        border-color: var(--accent) !important;
+        box-shadow: 0 4px 10px -2px rgba(79, 70, 229, 0.3);
+    }
+    .cat-tab:hover:not(.active) {
+        background-color: var(--accent-light) !important;
+        color: var(--accent) !important;
+        border-color: var(--accent-light) !important;
+    }
+    .category-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        align-items: center;
+        background: #fafafa;
+    }
+    #filter_category_select {
+        width: 180px;
+    }
+
+    @media (max-width: 768px) {
+        .category-tabs {
+            display: none !important;
+        }
+        #filter_category_select {
+            display: block !important;
+            width: 100% !important;
+        }
+    }
+    @media (min-width: 769px) {
+        #filter_category_select {
+            display: none !important;
+        }
+        .category-tabs {
+            display: flex !important;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
     <div class="card">
         <div class="card-header">
             <div style="display: flex; gap: 16px; align-items: center; width: 100%; justify-content: space-between; flex-wrap: wrap;">
-                <form action="{{ route('products.index') }}" method="GET" style="display: flex; gap: 8px; flex-grow: 1; max-width: 600px; flex-wrap: wrap;">
-                    <input type="text" name="search" class="form-control" placeholder="Cari barcode, kode, nama..." value="{{ $search }}" style="width: 220px;">
-                    <select name="category_id" class="form-control" style="width: 180px;">
+                <form id="searchForm" action="{{ route('products.index') }}" method="GET" style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1; max-width: 600px;">
+                    <div style="display: flex; gap: 8px; width: 100%; align-items: center;">
+                        <div style="position: relative; flex-grow: 1; display: flex; align-items: center;">
+                            <input type="text" id="productSearch" name="search" class="form-control" placeholder="Cari barcode, kode, nama..." value="{{ $search }}" style="flex-grow: 1; padding-right: 36px;">
+                            <button type="button" id="clearSearch" style="position: absolute; right: 8px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: {{ $search ? 'flex' : 'none' }}; align-items: center; justify-content: center; width: 24px; height: 24px; outline: none; font-size: 16px; padding: 0;">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                        </div>
+                        <button type="submit" class="btn btn-secondary" style="white-space: nowrap;"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
+                    </div>
+                    <select name="category_id" id="filter_category_select" class="form-control">
                         <option value="">Semua Kategori</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}" {{ $categoryId == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                         @endforeach
                     </select>
-                    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-magnifying-glass"></i> Filter</button>
                 </form>
                 <button type="button" id="btnBulkPrintLabels" class="btn btn-secondary" style="display: none; align-items: center; gap: 8px;" onclick="printSelectedLabels()">
                     <i class="fa-solid fa-tags" style="color: var(--accent);"></i> Cetak Label (<span id="selectedCount">0</span>)
@@ -26,6 +79,18 @@
             </div>
         </div>
         <div class="card-body" style="padding: 0;">
+            <!-- Category Tabs Filter -->
+            <div class="category-tabs">
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-right: 8px;"><i class="fa-solid fa-filter"></i> Kategori:</span>
+                <button type="button" class="cat-tab {{ !$categoryId ? 'active' : '' }}" data-id="" style="padding: 8px 16px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 9999px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); outline: none;">
+                    Semua Kategori
+                </button>
+                @foreach($categories as $cat)
+                    <button type="button" class="cat-tab {{ $categoryId == $cat->id ? 'active' : '' }}" data-id="{{ $cat->id }}" style="padding: 8px 16px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 9999px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); outline: none;">
+                        {{ $cat->name }}
+                    </button>
+                @endforeach
+            </div>
             <div class="table-responsive">
                 <table class="table">
                     <thead>
@@ -51,11 +116,11 @@
                                 <td><strong>Rp {{ number_format($product->selling_price, 0, ',', '.') }}</strong></td>
                                 <td>
                                     @if($product->stock <= 5)
-                                        <span class="badge badge-danger" style="font-size: 13px;">{{ $product->stock }} (Kritis)</span>
+                                        <span class="badge badge-danger" style="font-size: 13px;">{{ (float)$product->stock }} {{ $product->unit }} (Kritis)</span>
                                     @elseif($product->stock <= 15)
-                                        <span class="badge badge-warning" style="font-size: 13px;">{{ $product->stock }} (Menipis)</span>
+                                        <span class="badge badge-warning" style="font-size: 13px;">{{ (float)$product->stock }} {{ $product->unit }} (Menipis)</span>
                                     @else
-                                        <span class="badge badge-success" style="font-size: 13px;">{{ $product->stock }}</span>
+                                        <span class="badge badge-success" style="font-size: 13px;">{{ (float)$product->stock }} {{ $product->unit }}</span>
                                     @endif
                                 </td>
                                 <td>
@@ -102,8 +167,9 @@
                 <h3 class="modal-title">Tambah Produk Baru</h3>
                 <button onclick="closeAddModal()" class="modal-close">&times;</button>
             </div>
-            <form action="{{ route('products.store') }}" method="POST">
+            <form id="addForm" action="{{ route('products.store') }}" method="POST">
                 @csrf
+                <input type="hidden" id="add_method" name="_method" value="POST" disabled>
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="add_code" class="form-label">Kode Produk / Barcode</label>
@@ -137,9 +203,15 @@
                             <input type="number" id="add_selling_price" name="selling_price" class="form-control" required min="0" placeholder="68000">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="add_stock" class="form-label">Jumlah Stok Awal</label>
-                        <input type="number" id="add_stock" name="stock" class="form-control" required min="0" placeholder="50">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label for="add_stock" class="form-label">Jumlah Stok Awal</label>
+                            <input type="number" id="add_stock" name="stock" class="form-control" required min="0" placeholder="50">
+                        </div>
+                        <div class="form-group">
+                            <label for="add_unit" class="form-label">Satuan</label>
+                            <input type="text" id="add_unit" name="unit" class="form-control" required placeholder="Contoh: pcs" value="pcs">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -192,9 +264,15 @@
                             <input type="number" id="edit_selling_price" name="selling_price" class="form-control" required min="0">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="edit_stock" class="form-label">Stok</label>
-                        <input type="number" id="edit_stock" name="stock" class="form-control" required min="0">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label for="edit_stock" class="form-label">Stok</label>
+                            <input type="number" id="edit_stock" name="stock" class="form-control" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_unit" class="form-label">Satuan</label>
+                            <input type="text" id="edit_unit" name="unit" class="form-control" required placeholder="Contoh: pcs">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -281,7 +359,12 @@
             playBeep();
             
             if (activeTargetInputId) {
-                document.getElementById(activeTargetInputId).value = decodedText.trim();
+                const inputEl = document.getElementById(activeTargetInputId);
+                inputEl.value = decodedText.trim();
+                
+                // Dispatch change event programmatically so event listeners run
+                const event = new Event('change', { bubbles: true });
+                inputEl.dispatchEvent(event);
             }
             
             closeCameraScanner();
@@ -327,12 +410,115 @@
             }
         }
 
+        function checkProductCode(code) {
+            code = code.trim();
+            if (!code) {
+                resetAddFormToStore();
+                return;
+            }
+
+            fetch(`/products/search-by-code/${encodeURIComponent(code)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const product = data.product;
+                        // Autofill form
+                        document.getElementById('add_name').value = product.name;
+                        document.getElementById('add_category_id').value = product.category_id;
+                        document.getElementById('add_purchase_price').value = Math.round(product.purchase_price);
+                        document.getElementById('add_selling_price').value = Math.round(product.selling_price);
+                        document.getElementById('add_stock').value = parseFloat(product.stock);
+                        document.getElementById('add_unit').value = product.unit || 'pcs';
+
+                        // Transform form to Update
+                        const form = document.getElementById('addForm');
+                        form.action = `/products/${product.id}`;
+                        
+                        const methodInput = document.getElementById('add_method');
+                        methodInput.value = 'PUT';
+                        methodInput.disabled = false;
+
+                        // Update UI header/buttons
+                        document.querySelector('#addModal .modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edit Produk (Sudah Tersimpan)';
+                        document.querySelector('#addModal button[type="submit"]').textContent = 'Simpan Perubahan';
+                        
+                        // Show info badge if not exists
+                        let infoAlert = document.getElementById('add_code_alert');
+                        if (!infoAlert) {
+                            infoAlert = document.createElement('div');
+                            infoAlert.id = 'add_code_alert';
+                            infoAlert.className = 'alert alert-info';
+                            infoAlert.style.marginTop = '8px';
+                            infoAlert.style.padding = '8px 12px';
+                            infoAlert.style.fontSize = '13px';
+                            infoAlert.style.borderRadius = 'var(--radius-sm)';
+                            infoAlert.style.background = 'rgba(79, 70, 229, 0.08)';
+                            infoAlert.style.color = 'var(--accent)';
+                            infoAlert.style.border = '1px solid rgba(79, 70, 229, 0.15)';
+                            infoAlert.innerHTML = '<i class="fa-solid fa-circle-info"></i> Produk dengan barcode ini sudah terdaftar. Mengisi data otomatis untuk diedit.';
+                            document.getElementById('add_code').parentNode.parentNode.appendChild(infoAlert);
+                        }
+                    } else {
+                        resetAddFormToStore();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error checking product code:', err);
+                });
+        }
+
+        function resetAddFormToStore() {
+            // Revert form to Store (POST)
+            const form = document.getElementById('addForm');
+            if (form) {
+                form.action = "{{ route('products.store') }}";
+            }
+            
+            const methodInput = document.getElementById('add_method');
+            if (methodInput) {
+                methodInput.value = 'POST';
+                methodInput.disabled = true;
+            }
+
+            const addUnitInput = document.getElementById('add_unit');
+            if (addUnitInput) {
+                addUnitInput.value = 'pcs';
+            }
+
+            const title = document.querySelector('#addModal .modal-title');
+            if (title) {
+                title.innerHTML = 'Tambah Produk Baru';
+            }
+
+            const submitBtn = document.querySelector('#addModal button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'Simpan';
+            }
+
+            const infoAlert = document.getElementById('add_code_alert');
+            if (infoAlert) {
+                infoAlert.remove();
+            }
+        }
+
         function openAddModal() {
+            resetAddFormToStore();
+            const form = document.getElementById('addForm');
+            if (form) {
+                form.reset();
+            }
             document.getElementById('addModal').classList.add('active');
         }
+
         function closeAddModal() {
             document.getElementById('addModal').classList.remove('active');
+            resetAddFormToStore();
+            const form = document.getElementById('addForm');
+            if (form) {
+                form.reset();
+            }
         }
+
         function openEditModal(product) {
             const form = document.getElementById('editForm');
             form.action = `/products/${product.id}`;
@@ -341,12 +527,66 @@
             document.getElementById('edit_category_id').value = product.category_id;
             document.getElementById('edit_purchase_price').value = Math.round(product.purchase_price);
             document.getElementById('edit_selling_price').value = Math.round(product.selling_price);
-            document.getElementById('edit_stock').value = product.stock;
+            document.getElementById('edit_stock').value = parseFloat(product.stock);
+            document.getElementById('edit_unit').value = product.unit || 'pcs';
             document.getElementById('editModal').classList.add('active');
         }
+
         function closeEditModal() {
             document.getElementById('editModal').classList.remove('active');
         }
+
+        // Add event listeners on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const addCodeInput = document.getElementById('add_code');
+            if (addCodeInput) {
+                addCodeInput.addEventListener('change', function() {
+                    checkProductCode(this.value);
+                });
+                addCodeInput.addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter') {
+                        checkProductCode(this.value);
+                    }
+                });
+                addCodeInput.addEventListener('blur', function() {
+                    checkProductCode(this.value);
+                });
+            }
+
+            // Category Tab filter listeners
+            document.querySelectorAll('.cat-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const categoryId = this.dataset.id;
+                    const selectEl = document.getElementById('filter_category_select');
+                    if (selectEl) {
+                        selectEl.value = categoryId;
+                    }
+                    document.getElementById('searchForm').submit();
+                });
+            });
+
+            // Auto-submit on mobile dropdown change
+            const selectEl = document.getElementById('filter_category_select');
+            if (selectEl) {
+                selectEl.addEventListener('change', function() {
+                    document.getElementById('searchForm').submit();
+                });
+            }
+
+            // Clear search text listener
+            const clearSearchBtn = document.getElementById('clearSearch');
+            const productSearchInput = document.getElementById('productSearch');
+            if (clearSearchBtn && productSearchInput) {
+                clearSearchBtn.addEventListener('click', function() {
+                    productSearchInput.value = '';
+                    this.style.display = 'none';
+                    document.getElementById('searchForm').submit();
+                });
+                productSearchInput.addEventListener('input', function() {
+                    clearSearchBtn.style.display = this.value.trim().length > 0 ? 'flex' : 'none';
+                });
+            }
+        });
 
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {

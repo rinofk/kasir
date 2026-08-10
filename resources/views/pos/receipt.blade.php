@@ -58,7 +58,7 @@
                     </div>
                     <!-- Details & Subtotal (bottom line) -->
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #333; margin-top: 1px;">
-                        <span>Rp{{ number_format($detail->price, 0, ',', '.') }} x {{ $detail->quantity }}</span>
+                        <span>Rp{{ number_format($detail->price, 0, ',', '.') }} x {{ (float) $detail->quantity }}</span>
                         <strong style="font-weight: 700; color: #000; font-size: 12px;">Rp{{ number_format($detail->subtotal, 0, ',', '.') }}</strong>
                     </div>
                 </div>

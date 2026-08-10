@@ -27,7 +27,7 @@ class PosController extends Controller
         $request->validate([
             'cart' => 'required|array|min:1',
             'cart.*.id' => 'required|string',
-            'cart.*.qty' => 'required|integer|min:1',
+            'cart.*.qty' => 'required|numeric|gt:0',
             'cart.*.name' => 'nullable|string',
             'cart.*.price' => 'nullable|numeric|min:0',
             'payment_amount' => 'required|numeric|min:0',

@@ -267,7 +267,8 @@
                          data-code="{{ $prod->code }}"
                          data-name="{{ $prod->name }}"
                          data-price="{{ (float) $prod->selling_price }}"
-                         data-stock="{{ $prod->stock }}"
+                         data-stock="{{ (float)$prod->stock }}"
+                         data-unit="{{ $prod->unit ?? 'pcs' }}"
                          data-category="{{ $prod->category_id }}"
                          title="{{ $prod->name }} - Rp {{ number_format($prod->selling_price, 0, ',', '.') }}">
                         
@@ -292,9 +293,9 @@
                                 @if($prod->stock <= 0)
                                     <span style="color: var(--danger); font-weight: 700;">Habis</span>
                                 @elseif($prod->stock <= 5)
-                                    <span style="color: var(--warning); font-weight: 600;">Stok: {{ $prod->stock }}</span>
+                                    <span style="color: var(--warning); font-weight: 600;">Stok: {{ (float)$prod->stock }} {{ $prod->unit }}</span>
                                 @else
-                                    <span style="color: var(--text-secondary);">Stok: <strong class="stock-num">{{ $prod->stock }}</strong></span>
+                                    <span style="color: var(--text-secondary);">Stok: <strong class="stock-num">{{ (float)$prod->stock }}</strong> {{ $prod->unit }}</span>
                                 @endif
                             </div>
                         </div>
@@ -409,7 +410,7 @@
                     </div>
                     <div class="form-group">
                         <label for="manual_qty" class="form-label">Jumlah (Qty)</label>
-                        <input type="number" id="manual_qty" class="form-control" required min="1" value="1">
+                        <input type="number" id="manual_qty" class="form-control" required min="0.001" step="any" value="1">
                     </div>
                 </div>
                 <div class="modal-footer" style="padding: 16px 0 0 0; display: flex; justify-content: flex-end; gap: 8px;">
@@ -509,7 +510,7 @@
                     const code = card.dataset.code;
                     const name = card.dataset.name;
                     const price = parseFloat(card.dataset.price);
-                    const stock = parseInt(card.dataset.stock);
+                    const stock = parseFloat(card.dataset.stock);
 
                     addToCart(id, code, name, price, stock);
                     
@@ -596,7 +597,7 @@
             const code = card.dataset.code;
             const name = card.dataset.name;
             const price = parseFloat(card.dataset.price);
-            const stock = parseInt(card.dataset.stock);
+            const stock = parseFloat(card.dataset.stock);
 
             addToCart(id, code, name, price, stock);
         });
@@ -606,7 +607,7 @@
 
             if (existingItem) {
                 if (isStockValidation && existingItem.qty >= stock) {
-                    alert(`Stok tidak mencukupi. Sisa stok: ${stock}`);
+                    alert(`Stok tidak mencukupi. Sisa stok: ${parseFloat(stock)}`);
                     return;
                 }
                 existingItem.qty += 1;
@@ -625,18 +626,40 @@
         }
 
         function updateQty(id, delta) {
-            const itemIndex = cart.findIndex(item => item.id === id);
+            const itemIndex = cart.findIndex(item => String(item.id) === String(id));
             if (itemIndex === -1) return;
 
             const item = cart[itemIndex];
-            const newQty = item.qty + delta;
+            const newQty = Math.round((item.qty + delta) * 1000) / 1000;
 
             if (newQty <= 0) {
                 cart.splice(itemIndex, 1);
             } else {
                 const isManual = typeof item.id === 'string' && item.id.startsWith('manual_');
                 if (!isManual && isStockValidation && newQty > item.stock) {
-                    alert(`Stok tidak mencukupi. Sisa stok: ${item.stock}`);
+                    alert(`Stok tidak mencukupi. Sisa stok: ${parseFloat(item.stock)}`);
+                    return;
+                }
+                item.qty = newQty;
+            }
+
+            renderCart();
+        }
+
+        function setQty(id, value) {
+            const itemIndex = cart.findIndex(item => String(item.id) === String(id));
+            if (itemIndex === -1) return;
+
+            const item = cart[itemIndex];
+            const newQty = Math.round(parseFloat(value) * 1000) / 1000;
+
+            if (isNaN(newQty) || newQty <= 0) {
+                cart.splice(itemIndex, 1);
+            } else {
+                const isManual = typeof item.id === 'string' && item.id.startsWith('manual_');
+                if (!isManual && isStockValidation && newQty > item.stock) {
+                    alert(`Stok tidak mencukupi. Sisa stok: ${parseFloat(item.stock)}`);
+                    renderCart();
                     return;
                 }
                 item.qty = newQty;
@@ -646,7 +669,7 @@
         }
 
         function removeItem(id) {
-            cart = cart.filter(item => item.id !== id);
+            cart = cart.filter(item => String(item.id) !== String(id));
             renderCart();
         }
 
@@ -688,14 +711,14 @@
                             <div class="pos-cart-item-price">${formatRupiah(item.price)}</div>
                         </div>
                         <div class="pos-cart-item-qty">
-                            <button type="button" onclick="updateQty(${item.id}, -1)" class="qty-btn">-</button>
-                            <span style="font-weight: 600; min-width: 20px; text-align: center;">${item.qty}</span>
-                            <button type="button" onclick="updateQty(${item.id}, 1)" class="qty-btn">+</button>
+                            <button type="button" onclick="updateQty('${item.id}', -1)" class="qty-btn">-</button>
+                            <input type="number" step="any" min="0.001" value="${item.qty}" onchange="setQty('${item.id}', this.value)" class="form-control" style="width: 75px; text-align: center; font-weight: 600; padding: 2px 4px; height: 30px; margin: 0 4px; font-size: 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <button type="button" onclick="updateQty('${item.id}', 1)" class="qty-btn">+</button>
                         </div>
                         <div class="pos-cart-item-subtotal">
                             ${formatRupiah(subtotal)}
                         </div>
-                        <button type="button" onclick="removeItem(${item.id})" style="background: none; border: none; color: var(--danger); cursor: pointer; margin-left: 12px; font-size: 14px;">
+                        <button type="button" onclick="removeItem('${item.id}')" style="background: none; border: none; color: var(--danger); cursor: pointer; margin-left: 12px; font-size: 14px;">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
                     </div>
@@ -846,11 +869,12 @@
                     cart.forEach(item => {
                         const card = document.querySelector(`.product-card[data-id="${item.id}"]`);
                         if (card) {
-                            let newStock = parseInt(card.dataset.stock) - item.qty;
+                            let newStock = parseFloat(card.dataset.stock) - item.qty;
+                            newStock = Math.round(newStock * 1000) / 1000;
                             card.dataset.stock = newStock;
                             const stockNumSpan = card.querySelector('.stock-num');
                             if (stockNumSpan) {
-                                stockNumSpan.textContent = newStock;
+                                stockNumSpan.textContent = parseFloat(newStock);
                             }
                             if (newStock <= 0) {
                                 card.classList.add('out-of-stock');
@@ -956,12 +980,13 @@
                 const code = card.dataset.code;
                 const name = card.dataset.name;
                 const price = parseFloat(card.dataset.price);
-                const stock = parseInt(card.dataset.stock);
+                const stock = parseFloat(card.dataset.stock);
+                const unit = card.dataset.unit || 'pcs';
                 const isOutOfStock = stock <= 0;
 
                 html += `
                     <div class="autocomplete-item ${isOutOfStock ? 'out-of-stock' : ''} ${idx === selectedIndex ? 'selected' : ''}" 
-                         data-idx="${idx}">
+                          data-idx="${idx}">
                         <div class="autocomplete-item-main">
                             <div class="autocomplete-item-name">${escapeHtml(name)}</div>
                             <div class="autocomplete-item-code">
@@ -974,7 +999,7 @@
                             <div class="autocomplete-item-stock">
                                 ${isOutOfStock 
                                     ? '<span class="badge badge-danger" style="font-size: 11px; padding: 2px 6px;">Habis</span>' 
-                                    : `<span style="color: var(--text-secondary);">Stok: <strong>${stock}</strong></span>`}
+                                    : `<span style="color: var(--text-secondary);">Stok: <strong>${parseFloat(stock)}</strong> ${unit}</span>`}
                             </div>
                         </div>
                     </div>
@@ -1020,7 +1045,7 @@
                 const code = card.dataset.code;
                 const name = card.dataset.name;
                 const price = parseFloat(card.dataset.price);
-                const stock = parseInt(card.dataset.stock);
+                const stock = parseFloat(card.dataset.stock);
 
                 addToCart(id, code, name, price, stock);
 
@@ -1131,7 +1156,7 @@
                     const code = card.dataset.code;
                     const name = card.dataset.name;
                     const price = parseFloat(card.dataset.price);
-                    const stock = parseInt(card.dataset.stock);
+                    const stock = parseFloat(card.dataset.stock);
 
                     addToCart(id, code, name, price, stock);
 
@@ -1308,7 +1333,7 @@
             const name = document.getElementById('manual_name').value.trim() || 'Barang Manual';
             const priceVal = document.getElementById('manual_price').value.replace(/[^0-9]/g, '');
             const price = parseFloat(priceVal) || 0;
-            const qty = parseInt(document.getElementById('manual_qty').value) || 1;
+            const qty = parseFloat(document.getElementById('manual_qty').value) || 1;
 
             if (price <= 0) {
                 alert("Harga barang harus lebih besar dari 0.");

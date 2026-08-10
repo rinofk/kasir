@@ -39,7 +39,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'purchase_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'stock' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:255',
         ]);
 
         Product::create($request->all());
@@ -55,7 +56,8 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'purchase_price' => 'required|numeric|min:0',
             'selling_price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
+            'stock' => 'required|numeric|min:0',
+            'unit' => 'required|string|max:255',
         ]);
 
         $product->update($request->all());
@@ -67,6 +69,21 @@ class ProductController extends Controller
     {
         $product->delete();
         return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus!');
+    }
+
+    public function searchByCode($code)
+    {
+        $product = Product::where('code', $code)->first();
+        if ($product) {
+            return response()->json([
+                'success' => true,
+                'product' => $product
+            ]);
+        }
+        return response()->json([
+            'success' => false,
+            'message' => 'Produk tidak ditemukan.'
+        ]);
     }
 
     public function printLabels(Request $request)

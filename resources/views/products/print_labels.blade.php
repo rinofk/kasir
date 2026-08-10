@@ -87,7 +87,7 @@
             background-color: #ffffff;
             border: 1.5px solid #000000;
             border-radius: 6px;
-            padding: 10px 12px;
+            padding: 16px 14px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -235,7 +235,10 @@
             <div class="shelftag-container">
                 <div class="shelftag-top-row">
                     <div class="currency-symbol">Rp</div>
-                    <div class="price-value">{{ number_format($product->selling_price, 0, ',', '.') }}</div>
+                    <div style="display: flex; align-items: flex-end; gap: 4px;">
+                        <span class="price-value">{{ number_format($product->selling_price, 0, ',', '.') }}</span>
+                        <span style="font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 6px; text-transform: lowercase;">/{{ $product->unit ?? 'pcs' }}</span>
+                    </div>
                 </div>
                 <div class="product-name">
                     {{ $product->name }}
