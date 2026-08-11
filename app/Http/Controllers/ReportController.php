@@ -28,7 +28,7 @@ class ReportController extends Controller
             })
             ->with(['user', 'details.product'])
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->paginate(25);
 
         $totalSales = Transaction::whereBetween('created_at', [$startDate, $endDate])
             ->when($cashierId, function ($query, $cashierId) {
@@ -52,6 +52,39 @@ class ReportController extends Controller
             })
             ->sum(DB::raw('(transaction_details.price - products.purchase_price) * transaction_details.quantity'));
 
+        $sortBy = $request->input('sort_by', 'quantity');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        $allowedSortBy = ['quantity', 'profit'];
+        $allowedSortOrder = ['asc', 'desc'];
+
+        if (!in_array($sortBy, $allowedSortBy)) {
+            $sortBy = 'quantity';
+        }
+        if (!in_array($sortOrder, $allowedSortOrder)) {
+            $sortOrder = 'desc';
+        }
+
+        $orderByColumn = $sortBy === 'profit' ? 'total_profit' : 'total_quantity';
+
+        $productStats = DB::table('transaction_details')
+            ->join('transactions', 'transactions.id', '=', 'transaction_details.transaction_id')
+            ->join('products', 'transaction_details.product_id', '=', 'products.id')
+            ->select(
+                'products.name',
+                'products.code',
+                'products.unit',
+                DB::raw('SUM(transaction_details.quantity) as total_quantity'),
+                DB::raw('SUM((transaction_details.price - products.purchase_price) * transaction_details.quantity) as total_profit')
+            )
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
+            ->when($cashierId, function ($query, $cashierId) {
+                return $query->where('transactions.user_id', $cashierId);
+            })
+            ->groupBy('products.id', 'products.name', 'products.code', 'products.unit')
+            ->orderBy($orderByColumn, $sortOrder)
+            ->get();
+
         $cashiers = User::orderBy('name')->get();
 
         return view('reports.index', compact(
@@ -62,7 +95,10 @@ class ReportController extends Controller
             'cashiers',
             'startDate', 
             'endDate', 
-            'cashierId'
+            'cashierId',
+            'productStats',
+            'sortBy',
+            'sortOrder'
         ));
     }
 

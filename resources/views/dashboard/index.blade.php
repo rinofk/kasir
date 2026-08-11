@@ -111,7 +111,7 @@
                                     <span style="font-weight: 600; font-size: 14px;">{{ $p->name }}</span>
                                     <span style="font-size: 12px; color: var(--text-secondary);">Kode: {{ $p->code }} | Kategori: {{ $p->category->name }}</span>
                                 </div>
-                                <span class="badge badge-danger">Sisa: {{ $p->stock }}</span>
+                                <span class="badge badge-danger">Sisa: {{ rtrim(rtrim(number_format($p->stock, 3, ',', '.'), '0'), ',') }}</span>
                             </li>
                         @empty
                             <li style="padding: 32px 24px; text-align: center; color: var(--success); font-weight: 500;">

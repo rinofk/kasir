@@ -67,16 +67,82 @@
         </div>
     </div>
 
-    <!-- Transactions List -->
+    @role('admin')
+    <!-- Product Sales Statistics & Profit -->
     <div class="card">
-        <div class="card-header">
-            <span class="card-title"><i class="fa-solid fa-list-check"></i> Riwayat Penjualan</span>
+        <div class="card-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="toggleCardBody('product-stats-body', 'product-stats-icon')">
+            <span class="card-title"><i class="fa-solid fa-chart-pie"></i> Rekap Penjualan & Keuntungan Per Barang</span>
+            <button type="button" class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px; height: 28px; width: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid var(--border-color); background: transparent;">
+                <i id="product-stats-icon" class="fa-solid fa-chevron-up"></i>
+            </button>
         </div>
-        <div class="card-body" style="padding: 0;">
+        <div class="card-body" id="product-stats-body" style="padding: 0;">
             <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
+                            <th style="width: 60px; text-align: center;">No</th>
+                            <th>Kode Barang</th>
+                            <th>Nama Barang</th>
+                            <th style="text-align: right;">
+                                <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'quantity', 'sort_order' => ($sortBy === 'quantity' && $sortOrder === 'desc') ? 'asc' : 'desc']) }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; width: 100%;">
+                                    Jumlah Terjual
+                                    @if($sortBy === 'quantity')
+                                        <i class="fa-solid fa-sort-{{ $sortOrder === 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fa-solid fa-sort" style="opacity: 0.4;"></i>
+                                    @endif
+                                </a>
+                            </th>
+                            <th style="text-align: right;">
+                                <a href="{{ request()->fullUrlWithQuery(['sort_by' => 'profit', 'sort_order' => ($sortBy === 'profit' && $sortOrder === 'desc') ? 'asc' : 'desc']) }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; width: 100%;">
+                                    Total Keuntungan
+                                    @if($sortBy === 'profit')
+                                        <i class="fa-solid fa-sort-{{ $sortOrder === 'asc' ? 'up' : 'down' }}"></i>
+                                    @else
+                                        <i class="fa-solid fa-sort" style="opacity: 0.4;"></i>
+                                    @endif
+                                </a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($productStats as $stat)
+                            <tr>
+                                <td style="text-align: center; color: var(--text-secondary);">{{ $loop->iteration }}</td>
+                                <td><code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600;">{{ $stat->code }}</code></td>
+                                <td><strong>{{ $stat->name }}</strong></td>
+                                <td style="text-align: right;">{{ rtrim(rtrim(number_format($stat->total_quantity, 3, ',', '.'), '0'), ',') }} {{ $stat->unit }}</td>
+                                <td style="text-align: right; color: var(--success); font-weight: 600;">Rp {{ number_format($stat->total_profit, 0, ',', '.') }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 32px;">
+                                    Tidak ada data penjualan barang pada periode terpilih.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endrole
+
+    <!-- Transactions List -->
+    <div class="card">
+        <div class="card-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="toggleCardBody('transactions-list-body', 'transactions-list-icon')">
+            <span class="card-title"><i class="fa-solid fa-list-check"></i> Riwayat Penjualan</span>
+            <button type="button" class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px; height: 28px; width: 28px; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid var(--border-color); background: transparent;">
+                <i id="transactions-list-icon" class="fa-solid fa-chevron-up"></i>
+            </button>
+        </div>
+        <div class="card-body" id="transactions-list-body" style="padding: 0;">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px; text-align: center;">No</th>
                             <th>Nomor Invoice</th>
                             <th>Kasir</th>
                             <th>Tanggal Penjualan</th>
@@ -88,6 +154,9 @@
                     <tbody>
                         @forelse($transactions as $tx)
                             <tr>
+                                <td style="text-align: center; color: var(--text-secondary);">
+                                    {{ ($transactions->currentPage() - 1) * $transactions->perPage() + $loop->iteration }}
+                                </td>
                                 <td><code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600;">{{ $tx->invoice_number }}</code></td>
                                 <td>{{ $tx->user->name }}</td>
                                 <td>{{ $tx->created_at->format('d M Y, H:i') }}</td>
@@ -112,7 +181,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 32px;">
+                                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 32px;">
                                     Tidak ada riwayat transaksi pada periode terpilih.
                                 </td>
                             </tr>
@@ -128,4 +197,20 @@
             @endif
         </div>
     </div>
+@endsection
+
+@section('scripts')
+<script>
+    function toggleCardBody(bodyId, iconId) {
+        const body = document.getElementById(bodyId);
+        const icon = document.getElementById(iconId);
+        if (body.style.display === 'none') {
+            body.style.display = 'block';
+            icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+        } else {
+            body.style.display = 'none';
+            icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+        }
+    }
+</script>
 @endsection

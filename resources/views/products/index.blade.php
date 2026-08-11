@@ -267,8 +267,8 @@
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
-                            <label for="add_stock" class="form-label">Jumlah Stok Awal</label>
-                            <input type="text" inputmode="numeric" id="add_stock" name="stock" class="form-control" required placeholder="50">
+                            <label for="add_stock" class="form-label">Jumlah Stok</label>
+                            <input type="text" inputmode="numeric" id="add_stock" name="stock" class="form-control" placeholder="Contoh: 50" value="">
                         </div>
                         <div class="form-group">
                             <label for="add_unit" class="form-label">Satuan</label>
@@ -336,7 +336,7 @@
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                         <div class="form-group">
-                            <label for="edit_stock" class="form-label">Stok</label>
+                            <label for="edit_stock" class="form-label">Jumlah Stok</label>
                             <input type="text" inputmode="numeric" id="edit_stock" name="stock" class="form-control" required>
                         </div>
                         <div class="form-group">
@@ -456,6 +456,7 @@
     <script>
         let html5QrcodeScanner = null;
         let activeTargetInputId = null;
+        let addModalCurrentStock = 0;
 
         function formatFloatToIndonesian(val) {
             if (val === undefined || val === null || val === '') return '';
@@ -590,7 +591,10 @@
                         document.getElementById('add_category_id').value = product.category_id;
                         document.getElementById('add_purchase_price').value = Math.round(product.purchase_price).toLocaleString('id-ID');
                         document.getElementById('add_selling_price').value = Math.round(product.selling_price).toLocaleString('id-ID');
-                        document.getElementById('add_stock').value = formatFloatToIndonesian(product.stock);
+                        let stockVal = parseFloat(product.stock);
+                        addModalCurrentStock = isNaN(stockVal) ? 0 : stockVal;
+                        document.getElementById('add_stock').placeholder = 'Stok saat ini: ' + formatFloatToIndonesian(product.stock);
+                        document.getElementById('add_stock').value = '';
                         document.getElementById('add_unit').value = product.unit || 'pcs';
 
                          const addPreviewContainer = document.getElementById('add_image_preview_container');
@@ -843,6 +847,13 @@
             const addUnitInput = document.getElementById('add_unit');
             if (addUnitInput) {
                 addUnitInput.value = 'pcs';
+            }
+
+            addModalCurrentStock = 0;
+            const addStockInput = document.getElementById('add_stock');
+            if (addStockInput) {
+                addStockInput.placeholder = 'Contoh: 50';
+                addStockInput.value = '';
             }
 
             const title = document.querySelector('#addModal .modal-title');
@@ -1143,6 +1154,22 @@
                 form.querySelectorAll('input[name="purchase_price"], input[name="selling_price"]').forEach(input => {
                     input.value = input.value.replace(/[^0-9]/g, '');
                 });
+
+                // For addForm: calculate final stock (currentStock + typedStock)
+                if (form.id === 'addForm') {
+                    const addStockInput = document.getElementById('add_stock');
+                    if (addStockInput) {
+                        let typedVal = addStockInput.value.trim();
+                        let parsedTyped = 0;
+                        if (typedVal !== '') {
+                            parsedTyped = parseFloat(typedVal.replace(/\./g, '').replace(/,/g, '.'));
+                            if (isNaN(parsedTyped)) parsedTyped = 0;
+                        }
+                        let finalVal = addModalCurrentStock + parsedTyped;
+                        addStockInput.value = formatFloatToIndonesian(finalVal);
+                    }
+                }
+
                 form.querySelectorAll('input[name="stock"]').forEach(input => {
                     let val = input.value.trim();
                     if (val !== '') {

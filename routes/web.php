@@ -11,6 +11,7 @@ use App\Http\Controllers\PosController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\LoginHistoryController;
 use Illuminate\Support\Facades\Auth;
 
 // Public Landing Page
@@ -39,6 +40,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class)->middleware('permission:manage products');
     Route::resource('users', UserController::class)->middleware('permission:manage users');
     Route::resource('roles', RoleController::class)->middleware('permission:manage users');
+    Route::get('/login-histories', [LoginHistoryController::class, 'index'])->name('login-histories.index')->middleware('permission:riwayat login');
+    Route::get('/login-histories/user/{user}', [LoginHistoryController::class, 'showUser'])->name('login-histories.show-user')->middleware('permission:riwayat login');
     
     // Sales Analysis Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')->middleware('permission:view reports');

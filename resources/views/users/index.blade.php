@@ -113,7 +113,12 @@
                     </div>
                     <div class="form-group">
                         <label for="add_password" class="form-label">Password</label>
-                        <input type="password" id="add_password" name="password" class="form-control" required placeholder="Minimal 8 karakter">
+                        <div style="position: relative;">
+                            <input type="password" id="add_password" name="password" class="form-control" required placeholder="Minimal 8 karakter" style="padding-right: 40px; width: 100%;">
+                            <button type="button" onclick="togglePasswordVisibility('add_password', 'toggle_add_password_icon')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px;" title="Lihat Password">
+                                <i id="toggle_add_password_icon" class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="add_role" class="form-label">Hak Akses / Role</label>
@@ -166,7 +171,12 @@
                     </div>
                     <div class="form-group">
                         <label for="edit_password" class="form-label">Password Baru (Kosongkan jika tidak diubah)</label>
-                        <input type="password" id="edit_password" name="password" class="form-control" placeholder="Minimal 8 karakter">
+                        <div style="position: relative;">
+                            <input type="password" id="edit_password" name="password" class="form-control" placeholder="Minimal 8 karakter" style="padding-right: 40px; width: 100%;">
+                            <button type="button" onclick="togglePasswordVisibility('edit_password', 'toggle_edit_password_icon')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px;" title="Lihat Password">
+                                <i id="toggle_edit_password_icon" class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="edit_role" class="form-label">Hak Akses / Role</label>
@@ -223,6 +233,22 @@
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('active');
+            }
+        }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.replace('fa-eye', 'fa-eye-slash');
+                    icon.parentElement.title = "Sembunyikan Password";
+                } else {
+                    input.type = 'password';
+                    icon.classList.replace('fa-eye-slash', 'fa-eye');
+                    icon.parentElement.title = "Lihat Password";
+                }
             }
         }
     </script>

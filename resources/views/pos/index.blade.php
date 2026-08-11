@@ -307,19 +307,21 @@
             </div>
 
             <!-- Category Filter Tabs (Default Hidden) -->
-            <div class="catalog-categories" id="catalogCategoriesContainer" style="display: none; gap: 8px; flex-wrap: wrap; padding: 4px 2px 8px 2px; align-items: center;">
-                <button type="button" class="cat-chip active" data-category-id="all">
-                    <i class="fa-solid fa-layer-group"></i> Semua <span class="cat-count">{{ count($products) }}</span>
-                </button>
-                @foreach($categories as $cat)
-                    @php
-                        $catProductCount = $products->where('category_id', $cat->id)->count();
-                    @endphp
-                    <button type="button" class="cat-chip" data-category-id="{{ $cat->id }}">
-                        <i class="fa-solid fa-tag"></i> {{ $cat->name }} <span class="cat-count">{{ $catProductCount }}</span>
-                    </button>
-                @endforeach
-                <button type="button" class="cat-chip" onclick="toggleCatalogDisplay(false)" style="background: rgba(239, 68, 68, 0.08); color: var(--danger); border-color: rgba(239, 68, 68, 0.2); margin-left: auto;" title="Sembunyikan Katalog & Tampilkan Info Toko">
+            <!-- Category Filter Dropdown (Default Hidden) -->
+            <div id="catalogCategoriesContainer" style="display: none; gap: 8px; width: 100%; padding: 4px 2px 8px 2px; align-items: center; justify-content: space-between;">
+                <div style="flex-grow: 1; max-width: 320px; display: flex; align-items: center; gap: 8px;">
+                    <label for="catalogCategorySelect" style="font-size: 13px; font-weight: 600; color: var(--text-secondary); white-space: nowrap;"><i class="fa-solid fa-filter" style="margin-right: 4px;"></i>Kategori:</label>
+                    <select id="catalogCategorySelect" class="form-control" style="font-weight: 600; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 14px; outline: none;" onchange="filterCatalog()">
+                        <option value="all">Semua Kategori ({{ count($products) }})</option>
+                        @foreach($categories as $cat)
+                            @php
+                                $catProductCount = $products->where('category_id', $cat->id)->count();
+                            @endphp
+                            <option value="{{ $cat->id }}">{{ $cat->name }} ({{ $catProductCount }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="button" onclick="toggleCatalogDisplay(false)" class="btn btn-secondary" style="padding: 8px 12px; color: var(--danger); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;" title="Sembunyikan Katalog">
                     <i class="fa-solid fa-xmark"></i> Sembunyikan
                 </button>
             </div>
@@ -1447,29 +1449,21 @@
         }
 
         function selectMobileCatalogCategory(categoryId) {
-            const chips = document.querySelectorAll('.cat-chip');
-            chips.forEach(chip => {
-                if (chip.dataset.categoryId === categoryId) {
-                    chips.forEach(c => c.classList.remove('active'));
-                    chip.classList.add('active');
-                }
-            });
             filterCatalog();
         }
 
-        const catChips = document.querySelectorAll('.cat-chip');
-        catChips.forEach(chip => {
-            chip.addEventListener('click', function() {
-                catChips.forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                filterCatalog();
-            });
-        });
-
         function filterCatalog() {
             const query = productSearch.value.toLowerCase().trim();
-            const activeChip = document.querySelector('.cat-chip.active');
-            const categoryId = activeChip ? activeChip.dataset.categoryId : 'all';
+            
+            // Check if mobile or desktop category selector is visible
+            let categoryId = 'all';
+            if (window.innerWidth <= 768) {
+                const mobileSelect = document.getElementById('mobileCatalogCategorySelect');
+                if (mobileSelect) categoryId = mobileSelect.value;
+            } else {
+                const desktopSelect = document.getElementById('catalogCategorySelect');
+                if (desktopSelect) categoryId = desktopSelect.value;
+            }
 
             const cards = document.querySelectorAll('.product-card');
             let visibleCount = 0;

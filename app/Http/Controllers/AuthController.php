@@ -46,6 +46,14 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
+            // Record login history
+            \App\Models\LoginHistory::create([
+                'user_id' => Auth::id(),
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'login_at' => now(),
+            ]);
+
             return Auth::user()->hasRole('admin')
                 ? redirect()->route('dashboard')
                 : redirect()->route('pos');

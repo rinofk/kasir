@@ -122,6 +122,14 @@
             </li>
             @endcan
 
+            @can('riwayat login')
+            <li class="sidebar-menu-item {{ Request::routeIs('login-histories.*') ? 'active' : '' }}">
+                <a href="{{ route('login-histories.index') }}">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Login
+                </a>
+            </li>
+            @endcan
+
             @can('view reports')
             <li class="sidebar-menu-item {{ Request::routeIs('reports.*') ? 'active' : '' }}">
                 <a href="{{ route('reports.index') }}">
@@ -176,7 +184,7 @@
                     <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
 
-                <div class="header-user-date-wrapper">
+                <div class="header-user-date-wrapper" style="display: flex; align-items: center; gap: 12px;">
                     <div class="header-user-badge">
                         <i class="fa-solid fa-user-tag" style="color: var(--accent);"></i>
                         <span>{{ Auth::user()->name }}</span>
@@ -184,6 +192,9 @@
                     <span class="badge badge-primary header-date-badge">
                         <i class="fa-regular fa-calendar"></i> &nbsp;<span id="header-date"></span>
                     </span>
+                    <button type="button" class="btn btn-secondary" onclick="confirmLogout(event)" style="padding: 10px 14px; display: flex; align-items: center; justify-content: center; color: var(--danger); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); gap: 6px; font-weight: 600;" title="Keluar dari sistem">
+                        <i class="fa-solid fa-right-from-bracket"></i> <span>Keluar</span>
+                    </button>
                 </div>
             </div>
         </header>

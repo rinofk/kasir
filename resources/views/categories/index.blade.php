@@ -21,6 +21,7 @@
                 <table class="table">
                     <thead>
                         <tr>
+                            <th style="width: 60px; text-align: center;">No</th>
                             <th>Nama</th>
                             <th>Slug</th>
                             <th>Deskripsi</th>
@@ -31,6 +32,9 @@
                     <tbody>
                         @forelse($categories as $category)
                             <tr>
+                                <td style="text-align: center; color: var(--text-secondary);">
+                                    {{ ($categories->currentPage() - 1) * $categories->perPage() + $loop->iteration }}
+                                </td>
                                 <td><strong>{{ $category->name }}</strong></td>
                                 <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">{{ $category->slug }}</code></td>
                                 <td>{{ $category->description ?? '-' }}</td>
@@ -52,7 +56,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 32px;">
+                                <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 32px;">
                                     Kategori tidak ditemukan.
                                 </td>
                             </tr>

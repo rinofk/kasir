@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             'view reports',
             'pos checkout',
             'manage settings',
+            'riwayat login',
         ];
 
         foreach ($permissions as $permission) {

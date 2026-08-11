@@ -41,7 +41,12 @@
 
             <div class="form-group">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                <div style="position: relative;">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required style="padding-right: 40px; width: 100%;">
+                    <button type="button" onclick="togglePasswordVisibility('password', 'toggle_password_icon')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px;" title="Lihat Password">
+                        <i id="toggle_password_icon" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
@@ -61,5 +66,22 @@
         </div>
     </div>
 
+    <script>
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.replace('fa-eye', 'fa-eye-slash');
+                    icon.parentElement.title = "Sembunyikan Password";
+                } else {
+                    input.type = 'password';
+                    icon.classList.replace('fa-eye-slash', 'fa-eye');
+                    icon.parentElement.title = "Lihat Password";
+                }
+            }
+        }
+    </script>
 </body>
 </html>
