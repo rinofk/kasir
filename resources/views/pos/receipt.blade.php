@@ -19,15 +19,14 @@
         body {
             background-color: #e5e7eb;
             font-family: 'Outfit', monospace, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            display: block;  /* JANGAN pakai flex — menyebabkan height 3276mm saat print */
             padding: 30px 16px 80px 16px;
         }
 
         .receipt-paper {
             background: #fff;
             width: 210px; /* ~58mm pada 96dpi */
+            margin: 0 auto; /* centering tanpa flexbox */
             padding: 12px 10px;
             font-size: 11px;
             line-height: 1.4;
@@ -79,8 +78,8 @@
         .btn-close  { background: #fff; color: #374151; }
 
         /* ===== PRINT STYLES ===== */
+        /* Biarkan printer driver menentukan ukuran kertas (tidak set @page size) */
         @page {
-            size: 58mm auto; /* lebar thermal POS-58, tinggi ikut konten */
             margin: 3mm 2mm;
         }
 
@@ -90,12 +89,13 @@
                 display: block !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                width: 58mm !important;
+                width: auto !important;
                 min-height: 0 !important;
                 height: auto !important;
             }
             .receipt-paper {
                 width: 100% !important;
+                margin: 0 !important;
                 box-shadow: none !important;
                 padding: 0 !important;
             }
