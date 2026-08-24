@@ -46,7 +46,7 @@
             padding: 8px !important;
         }
         .product-card-image {
-            height: 75px !important;
+            height: 110px !important;
         }
         .product-card-name {
             font-size: 12px !important;
@@ -343,7 +343,7 @@
             </div>
 
             <!-- Visible Products Catalog Grid (Default Hidden) -->
-            <div class="catalog-products-grid" id="catalogGrid" style="display: none; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; overflow-y: auto; flex-grow: 1; padding: 2px; align-content: start;">
+            <div class="catalog-products-grid" id="catalogGrid" style="display: none; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; overflow-y: auto; flex-grow: 1; padding: 2px; align-content: start;">
                 @foreach($products as $prod)
                     <div class="product-card {{ $prod->stock <= 0 ? 'out-of-stock' : '' }}" 
                          data-id="{{ $prod->id }}"
@@ -355,7 +355,7 @@
                          data-category="{{ $prod->category_id }}"
                          title="{{ $prod->name }} - Rp {{ number_format($prod->selling_price, 0, ',', '.') }}">
                         
-                        <div class="product-card-image" style="width: 100%; height: 90px; background: var(--bg-secondary); border-radius: var(--radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; border: 1px solid var(--border-color);">
+                        <div class="product-card-image" style="width: 100%; height: 110px; background: var(--bg-secondary); border-radius: var(--radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; border: 1px solid var(--border-color);">
                             @if($prod->image && file_exists(public_path($prod->image)))
                                 <img src="{{ asset($prod->image) }}" alt="{{ $prod->name }}" style="width: 100%; height: 100%; object-fit: cover;">
                             @else
@@ -372,12 +372,12 @@
                             </span>
                         </div>
 
-                        <div class="product-card-name" style="font-size: 14px; font-weight: 600; margin: 8px 0; color: var(--text-primary); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        <div class="product-card-name" style="font-size: 12px; font-weight: 600; margin: 4px 0; color: var(--text-primary); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                             {{ $prod->name }}
                         </div>
 
                         <div class="product-card-footer" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: auto;">
-                            <div class="product-card-price" style="font-weight: 700; color: var(--accent); font-size: 14px;">
+                            <div class="product-card-price" style="font-weight: 700; color: var(--accent); font-size: 12px;">
                                 Rp {{ number_format($prod->selling_price, 0, ',', '.') }}
                             </div>
                             <div class="product-card-stock" style="font-size: 11px;">

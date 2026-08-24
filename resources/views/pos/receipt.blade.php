@@ -9,7 +9,7 @@
         body {
             background-color: #f1f5f9;
             margin: 0;
-            padding: 0;
+            padding: 20px 0;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -17,6 +17,32 @@
         }
         .receipt-paper {
             font-family: 'Outfit', sans-serif !important;
+        }
+
+        /* ===== PRINT STYLES ===== */
+        @page {
+            size: 58mm auto; /* Lebar thermal POS-58, tinggi otomatis mengikuti konten */
+            margin: 4mm 3mm;
+        }
+
+        @media print {
+            html, body {
+                width: 58mm;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+                display: block !important;
+                min-height: unset !important;
+            }
+            .receipt-paper {
+                width: 100% !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
         }
     </style>
 </head>
