@@ -57,11 +57,14 @@
         }
         .r-table .col-left {
             text-align: left;
+            width: 55%;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .r-table .col-right {
             text-align: right;
             white-space: nowrap;
-            width: 1%;          /* squeeze to content */
+            width: 45%;
             padding-left: 4px;
         }
 
@@ -94,10 +97,10 @@
         .btn-close  { background: #fff; color: #374151; }
 
         /* ===== PRINT STYLES ===== */
-        /* Eksplisit set ukuran kertas thermal 58mm */
+        /* Biarkan driver printer yang atur ukuran kertas.
+           Kita hanya set margin=0 dan ikuti 100% lebar cetak. */
         @page {
-            size: 57mm auto;
-            margin: 2mm 4mm 2mm 1mm;
+            margin: 0;
         }
 
         @media print {
@@ -106,23 +109,38 @@
                 display: block !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                width: 57mm !important;
+                width: 100% !important;
                 min-height: 0 !important;
                 height: auto !important;
+                overflow: hidden !important;
             }
             .receipt-paper {
-                width: 57mm !important;
+                width: 100% !important;
+                max-width: 100% !important;
                 margin: 0 !important;
+                padding: 1mm 2mm !important;
                 box-shadow: none !important;
-                padding: 0 !important;
-                font-size: 8pt !important;
+                font-size: 7.5pt !important;
+                overflow: hidden !important;
             }
-            .receipt-header {
-                font-size: 8pt !important;
+            .receipt-header h2 {
+                font-size: 9pt !important;
+            }
+            .receipt-header p {
+                font-size: 7pt !important;
             }
             .r-table {
                 font-size: 7.5pt !important;
                 width: 100% !important;
+            }
+            .r-table .col-left {
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                white-space: nowrap !important;
+            }
+            .r-table .col-right {
+                width: auto !important;
+                white-space: nowrap !important;
             }
             .no-print {
                 display: none !important;
