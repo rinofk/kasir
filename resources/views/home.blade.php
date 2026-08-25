@@ -644,7 +644,7 @@
                     
                     <div class="form-group" style="margin-bottom: 16px;">
                         <label for="modal_email" class="form-label" style="font-weight: 600; font-size: 13px; color: #334155;">Email / Username Kasir</label>
-                        <input type="text" id="modal_email" name="email" class="form-control" placeholder="Contoh: lonkwandi atau email@domain.com" value="{{ old('email') }}" required autofocus style="font-size: 14px; padding: 11px 14px;">
+                        <input type="text" id="modal_email" name="email" class="form-control" placeholder="rino.f21@gmail.com" value="{{ old('email') }}" required autofocus style="font-size: 14px; padding: 11px 14px;">
                     </div>
 
                     <div class="form-group" style="margin-bottom: 16px;">

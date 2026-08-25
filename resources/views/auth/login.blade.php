@@ -36,7 +36,7 @@
             
             <div class="form-group">
                 <label for="email" class="form-label">Email / Username Kasir</label>
-                <input type="text" id="email" name="email" class="form-control" placeholder="Contoh: lonkwandi atau email@domain.com" value="{{ old('email') }}" required autofocus>
+                <input type="text" id="email" name="email" class="form-control" placeholder="rino.f21@gmail.com" value="{{ old('email') }}" required autofocus>
             </div>
 
             <div class="form-group">
