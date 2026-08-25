@@ -78,9 +78,8 @@
         .btn-close  { background: #fff; color: #374151; }
 
         /* ===== PRINT STYLES ===== */
-        /* Biarkan printer driver menentukan ukuran kertas (tidak set @page size) */
         @page {
-            margin: 3mm 2mm;
+            margin: 0;
         }
 
         @media print {
@@ -97,10 +96,7 @@
                 width: 100% !important;
                 margin: 0 !important;
                 box-shadow: none !important;
-                padding: 2mm 3mm !important;
-            }
-            .receipt-paper * {
-                word-break: break-word;
+                padding: 3mm 2mm !important;
             }
             .flex-row {
                 display: flex !important;
@@ -109,11 +105,13 @@
             .flex-row .flex-left {
                 min-width: 0;
                 flex: 1 1 auto;
-                padding-right: 4px;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             .flex-row .flex-right {
                 flex: 0 0 auto;
                 white-space: nowrap;
+                padding-left: 4px;
             }
             .no-print {
                 display: none !important;
@@ -158,13 +156,15 @@
         <!-- Items -->
         <div style="margin-bottom: 6px;">
             @foreach($transaction->details as $detail)
-                <div style="margin-bottom: 8px; line-height: 1.4;">
+                <div style="margin-bottom: 6px; line-height: 1.4;">
+                    {{-- Baris 1: Nama produk --}}
                     <div style="font-size: 11px; font-weight: 600; color: #000;">
                         {{ $detail->product_id ? $detail->product->name : $detail->custom_name }}
                     </div>
+                    {{-- Baris 2: qty x harga (kiri) | subtotal (kanan) --}}
                     <div class="flex-row" style="display: flex; justify-content: space-between; font-size: 10px; color: #333; margin-top: 1px;">
-                        <span class="flex-left">Rp{{ number_format($detail->price, 0, ',', '.') }} x {{ (float) $detail->quantity }}</span>
-                        <strong class="flex-right" style="color: #000; font-size: 11px;">Rp{{ number_format($detail->subtotal, 0, ',', '.') }}</strong>
+                        <span class="flex-left" style="white-space: nowrap;">{{ (float) $detail->quantity }} x Rp{{ number_format($detail->price, 0, ',', '.') }}</span>
+                        <strong class="flex-right" style="color: #000;">Rp{{ number_format($detail->subtotal, 0, ',', '.') }}</strong>
                     </div>
                 </div>
             @endforeach
