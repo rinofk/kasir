@@ -3,192 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Struk #{{ $transaction->invoice_number }}</title>
+    <title>Cetak Struk #{{ $transaction->invoice_number }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* ===== RESET TOTAL ===== */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* ===== RESET ===== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        /* ===== SCREEN ONLY ===== */
+        /* ===== SCREEN VIEW ===== */
         body {
-            background: #e5e7eb;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
-            padding: 24px 12px 80px;
+            background-color: #e5e7eb;
+            font-family: 'Outfit', monospace, sans-serif;
+            display: block;  /* JANGAN pakai flex — menyebabkan height 3276mm saat print */
+            padding: 30px 16px 80px 16px;
         }
 
-        .wrap {
+        .receipt-paper {
             background: #fff;
-            width: 226px;      /* ~60mm di 96dpi — preview layar */
-            margin: 0 auto;
-            padding: 10px 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,.15);
+            width: 210px; /* ~58mm pada 96dpi */
+            margin: 0 auto; /* centering tanpa flexbox */
+            padding: 12px 10px;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #111;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
 
-        .center { text-align: center; }
-        .bold   { font-weight: 700; }
-        .small  { font-size: 10px; color: #444; }
-        .divider { border-top: 1px dashed #555; margin: 5px 0; }
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 8px;
+        }
 
-        /* Tabel dua kolom: kiri teks, kanan angka */
-        table { width: 100%; border-collapse: collapse; }
-        td    { padding: 1px 0; vertical-align: top; font-size: 11px; }
-        .td-l { text-align: left;  }
-        .td-r { text-align: right; white-space: nowrap; padding-left: 6px; }
+        .receipt-divider {
+            border-top: 1px dashed #555;
+            margin: 6px 0;
+        }
+
+        .receipt-totals {
+            font-size: 11px;
+            line-height: 1.6;
+        }
 
         /* ===== TOMBOL LAYAR ===== */
         .no-print {
-            position: fixed; bottom: 20px; right: 20px;
-            display: flex; gap: 8px; z-index: 9999;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 9999;
         }
-        .btn {
-            padding: 10px 18px; border: none; border-radius: 8px;
-            font-size: 14px; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; gap: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,.2);
-        }
-        .btn-print { background: #4f46e5; color: #fff; }
-        .btn-close { background: #fff; color: #374151; }
 
-        /* ===== PRINT ===== */
+        .btn-screen {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: opacity 0.2s;
+        }
+        .btn-screen:hover { opacity: 0.85; }
+        .btn-print { background: #4f46e5; color: #fff; }
+        .btn-close  { background: #fff; color: #374151; }
+
+        /* ===== PRINT STYLES ===== */
+        /* Biarkan printer driver menentukan ukuran kertas (tidak set @page size) */
         @page {
-            size: 58mm 210mm;  /* cocokkan dengan "Printer Paper(58 x 210mm)" di driver */
-            margin: 0;         /* margin 0 — biarkan printer driver yg atur */
+            margin: 3mm 2mm;
         }
 
         @media print {
-            /* Reset body — hapus semua padding/height layar */
             html, body {
                 background: none !important;
+                display: block !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                width: 100% !important;
-                height: auto !important;
+                width: auto !important;
                 min-height: 0 !important;
-                max-height: none !important;
-                font-size: 8pt !important;
-                -webkit-print-color-adjust: exact;
-                overflow: visible !important;
+                height: auto !important;
             }
-
-            /* Sembunyikan tombol */
-            .no-print { display: none !important; }
-
-            /* Kotak struk: ikuti full lebar kertas, beri sedikit padding agar tidak mentok tepi */
-            .wrap {
+            .receipt-paper {
                 width: 100% !important;
-                max-width: 100% !important;
                 margin: 0 !important;
-                padding: 1mm 2mm !important;  /* pengganti @page margin */
                 box-shadow: none !important;
-                height: auto !important;
-                min-height: 0 !important;
-                overflow: visible !important;
+                padding: 0 !important;
             }
-
-            /* Tabel */
-            table { width: 100% !important; }
-            td    { font-size: 7.5pt !important; padding: 0 !important; }
-
-            .small { font-size: 7pt !important; }
+            .no-print {
+                display: none !important;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="wrap">
+    <div class="receipt-paper">
+        <div class="receipt-header">
+            <h2 style="font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 3px;">
+                {{ strtoupper(\App\Models\Setting::get('store_name', 'TOKO NINING')) }}
+            </h2>
+            <p style="font-size: 10px; color: #333; margin-bottom: 1px;">
+                {{ \App\Models\Setting::get('store_address', 'Mentibar, Kecamatan Paloh, Kabupaten Sambas') }}
+            </p>
+            <p style="font-size: 10px; color: #333;">
+                Telp: {{ \App\Models\Setting::get('store_phone', '0812-3456-7890') }}
+            </p>
+        </div>
 
-    {{-- HEADER --}}
-    <div class="center" style="margin-bottom:5px;">
-        <div class="bold" style="font-size:13px; text-transform:uppercase; letter-spacing:.5px;">
-            {{ strtoupper(\App\Models\Setting::get('store_name', 'TOKO NINING')) }}
+        <div class="receipt-divider"></div>
+
+        <div style="font-size: 10px; margin-bottom: 6px; line-height: 1.5;">
+            <div style="display: flex; justify-content: space-between;">
+                <strong>No. Invoice:</strong>
+                <span>{{ $transaction->invoice_number }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Waktu:</strong>
+                <span>{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <strong>Kasir:</strong>
+                <span>{{ $transaction->user->name }}</span>
+            </div>
         </div>
-        <div class="small" style="margin-top:2px;">
-            {{ \App\Models\Setting::get('store_address', 'Mentibar, Kecamatan Paloh, Kabupaten Sambas') }}
+
+        <div class="receipt-divider"></div>
+
+        <!-- Items -->
+        <div style="margin-bottom: 6px;">
+            @foreach($transaction->details as $detail)
+                <div style="margin-bottom: 8px; line-height: 1.4;">
+                    <div style="font-size: 11px; font-weight: 600; color: #000;">
+                        {{ $detail->product_id ? $detail->product->name : $detail->custom_name }}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 10px; color: #333; margin-top: 1px;">
+                        <span>Rp{{ number_format($detail->price, 0, ',', '.') }} x {{ (float) $detail->quantity }}</span>
+                        <strong style="color: #000; font-size: 11px;">Rp{{ number_format($detail->subtotal, 0, ',', '.') }}</strong>
+                    </div>
+                </div>
+            @endforeach
         </div>
-        <div class="small">
-            Telp: {{ \App\Models\Setting::get('store_phone', '0812-3456-7890') }}
+
+        <div class="receipt-divider"></div>
+
+        <!-- Totals -->
+        <div class="receipt-totals">
+            <div style="display: flex; justify-content: space-between;">
+                <span>TOTAL:</span>
+                <strong>Rp {{ number_format($transaction->total_price, 0, ',', '.') }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>TUNAI:</span>
+                <span>Rp {{ number_format($transaction->payment_amount, 0, ',', '.') }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                <span>KEMBALI:</span>
+                <span>Rp {{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
+            </div>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div style="text-align: center; font-size: 10px; margin-top: 10px; margin-bottom: 4px;">
+            <p style="font-weight: 700; margin-bottom: 2px;">TERIMA KASIH</p>
+            <p style="color: #555;">Atas Kunjungan Anda</p>
         </div>
     </div>
 
-    <div class="divider"></div>
-
-    {{-- INFO TRANSAKSI --}}
-    <table style="margin-bottom:4px;">
-        <tr>
-            <td class="td-l bold">No. Invoice</td>
-            <td class="td-r">{{ $transaction->invoice_number }}</td>
-        </tr>
-        <tr>
-            <td class="td-l bold">Waktu</td>
-            <td class="td-r">{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
-        </tr>
-        <tr>
-            <td class="td-l bold">Kasir</td>
-            <td class="td-r">{{ $transaction->user->name }}</td>
-        </tr>
-    </table>
-
-    <div class="divider"></div>
-
-    {{-- ITEM PRODUK --}}
-    <div style="margin-bottom:4px;">
-        @foreach($transaction->details as $detail)
-        <div style="margin-bottom:3px;">
-            {{-- Nama --}}
-            <div class="bold">{{ $detail->product_id ? $detail->product->name : $detail->custom_name }}</div>
-            {{-- qty × harga | subtotal --}}
-            <table>
-                <tr>
-                    <td class="td-l small">
-                        {{ (float)$detail->quantity }} x Rp{{ number_format($detail->price, 0, ',', '.') }}
-                    </td>
-                    <td class="td-r bold">
-                        Rp{{ number_format($detail->subtotal, 0, ',', '.') }}
-                    </td>
-                </tr>
-            </table>
-        </div>
-        @endforeach
+    <!-- Tombol hanya muncul di layar, tidak ikut tercetak -->
+    <div class="no-print">
+        <button onclick="window.print()" class="btn-screen btn-print">
+            <i class="fa-solid fa-print"></i> Cetak Struk
+        </button>
+        <button onclick="window.close()" class="btn-screen btn-close">
+            Tutup
+        </button>
     </div>
 
-    <div class="divider"></div>
-
-    {{-- TOTAL --}}
-    <table style="margin-bottom:4px;">
-        <tr>
-            <td class="td-l bold">TOTAL</td>
-            <td class="td-r bold">Rp{{ number_format($transaction->total_price, 0, ',', '.') }}</td>
-        </tr>
-        <tr>
-            <td class="td-l">TUNAI</td>
-            <td class="td-r">Rp{{ number_format($transaction->payment_amount, 0, ',', '.') }}</td>
-        </tr>
-        <tr class="bold">
-            <td class="td-l">KEMBALI</td>
-            <td class="td-r">Rp{{ number_format($transaction->change_amount, 0, ',', '.') }}</td>
-        </tr>
-    </table>
-
-    <div class="divider"></div>
-
-    {{-- FOOTER --}}
-    <div class="center small" style="margin-top:5px; margin-bottom:4px;">
-        <div class="bold">TERIMA KASIH</div>
-        <div>Atas Kunjungan Anda</div>
-    </div>
-
-</div>
-
-{{-- TOMBOL LAYAR --}}
-<div class="no-print">
-    <button onclick="window.print()" class="btn btn-print">&#x1F5A8; Cetak Struk</button>
-    <button onclick="window.close()" class="btn btn-close">Tutup</button>
-</div>
-
-<script>
-    window.addEventListener('load', function () {
-        setTimeout(function () { window.print(); }, 500);
-    });
-</script>
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.print();
+            }, 600);
+        });
+    </script>
 </body>
 </html>
+
