@@ -18,16 +18,16 @@
         /* ===== SCREEN VIEW ===== */
         body {
             background-color: #e5e7eb;
-            font-family: 'Outfit', monospace, sans-serif;
-            display: block;  /* JANGAN pakai flex — menyebabkan height 3276mm saat print */
+            font-family: 'Courier New', Courier, monospace;
+            display: block;
             padding: 30px 16px 80px 16px;
         }
 
         .receipt-paper {
             background: #fff;
-            width: 210px; /* ~58mm pada 96dpi */
-            margin: 0 auto; /* centering tanpa flexbox */
-            padding: 12px 10px;
+            width: 216px; /* ~58mm pada 96dpi screen */
+            margin: 0 auto;
+            padding: 10px 8px;
             font-size: 11px;
             line-height: 1.4;
             color: #111;
@@ -36,17 +36,33 @@
 
         .receipt-header {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            font-family: 'Outfit', sans-serif;
         }
 
         .receipt-divider {
             border-top: 1px dashed #555;
-            margin: 6px 0;
+            margin: 5px 0;
         }
 
-        .receipt-totals {
-            font-size: 11px;
-            line-height: 1.6;
+        /* Tabel untuk item & total: kolom kiri fleksibel, kolom kanan lebar tetap */
+        .r-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        .r-table td {
+            padding: 0;
+            vertical-align: top;
+        }
+        .r-table .col-left {
+            text-align: left;
+        }
+        .r-table .col-right {
+            text-align: right;
+            white-space: nowrap;
+            width: 1%;          /* squeeze to content */
+            padding-left: 4px;
         }
 
         /* ===== TOMBOL LAYAR ===== */
@@ -78,8 +94,10 @@
         .btn-close  { background: #fff; color: #374151; }
 
         /* ===== PRINT STYLES ===== */
+        /* Eksplisit set ukuran kertas thermal 58mm */
         @page {
-            margin: 0;
+            size: 58mm auto;
+            margin: 2mm 1mm;
         }
 
         @media print {
@@ -88,30 +106,23 @@
                 display: block !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                width: auto !important;
+                width: 58mm !important;
                 min-height: 0 !important;
                 height: auto !important;
             }
             .receipt-paper {
-                width: 100% !important;
+                width: 58mm !important;
                 margin: 0 !important;
                 box-shadow: none !important;
-                padding: 3mm 2mm !important;
+                padding: 0 !important;
+                font-size: 8pt !important;
             }
-            .flex-row {
-                display: flex !important;
-                justify-content: space-between !important;
+            .receipt-header {
+                font-size: 8pt !important;
             }
-            .flex-row .flex-left {
-                min-width: 0;
-                flex: 1 1 auto;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .flex-row .flex-right {
-                flex: 0 0 auto;
-                white-space: nowrap;
-                padding-left: 4px;
+            .r-table {
+                font-size: 7.5pt !important;
+                width: 100% !important;
             }
             .no-print {
                 display: none !important;
@@ -123,49 +134,56 @@
 
     <div class="receipt-paper">
         <div class="receipt-header">
-            <h2 style="font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 3px;">
+            <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; font-family: 'Outfit', sans-serif;">
                 {{ strtoupper(\App\Models\Setting::get('store_name', 'TOKO NINING')) }}
             </h2>
-            <p style="font-size: 10px; color: #333; margin-bottom: 1px;">
+            <p style="font-size: 9px; color: #333; margin-bottom: 1px;">
                 {{ \App\Models\Setting::get('store_address', 'Mentibar, Kecamatan Paloh, Kabupaten Sambas') }}
             </p>
-            <p style="font-size: 10px; color: #333;">
+            <p style="font-size: 9px; color: #333;">
                 Telp: {{ \App\Models\Setting::get('store_phone', '0812-3456-7890') }}
             </p>
         </div>
 
         <div class="receipt-divider"></div>
 
-        <div style="font-size: 10px; margin-bottom: 6px; line-height: 1.5;">
-            <div class="flex-row" style="display: flex; justify-content: space-between;">
-                <strong class="flex-left">No. Invoice:</strong>
-                <span class="flex-right">{{ $transaction->invoice_number }}</span>
-            </div>
-            <div class="flex-row" style="display: flex; justify-content: space-between;">
-                <strong class="flex-left">Waktu:</strong>
-                <span class="flex-right">{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
-            </div>
-            <div class="flex-row" style="display: flex; justify-content: space-between;">
-                <strong class="flex-left">Kasir:</strong>
-                <span class="flex-right">{{ $transaction->user->name }}</span>
-            </div>
-        </div>
+        <!-- Info transaksi -->
+        <table class="r-table" style="margin-bottom: 5px;">
+            <tr>
+                <td class="col-left"><strong>No. Invoice</strong></td>
+                <td class="col-right">{{ $transaction->invoice_number }}</td>
+            </tr>
+            <tr>
+                <td class="col-left"><strong>Waktu</strong></td>
+                <td class="col-right">{{ $transaction->created_at->format('d/m/Y H:i') }}</td>
+            </tr>
+            <tr>
+                <td class="col-left"><strong>Kasir</strong></td>
+                <td class="col-right">{{ $transaction->user->name }}</td>
+            </tr>
+        </table>
 
         <div class="receipt-divider"></div>
 
         <!-- Items -->
-        <div style="margin-bottom: 6px;">
+        <div style="margin-bottom: 5px;">
             @foreach($transaction->details as $detail)
-                <div style="margin-bottom: 6px; line-height: 1.4;">
-                    {{-- Baris 1: Nama produk --}}
-                    <div style="font-size: 11px; font-weight: 600; color: #000;">
+                <div style="margin-bottom: 4px;">
+                    {{-- Nama produk --}}
+                    <div style="font-weight: 700;">
                         {{ $detail->product_id ? $detail->product->name : $detail->custom_name }}
                     </div>
-                    {{-- Baris 2: qty x harga (kiri) | subtotal (kanan) --}}
-                    <div class="flex-row" style="display: flex; justify-content: space-between; font-size: 10px; color: #333; margin-top: 1px;">
-                        <span class="flex-left" style="white-space: nowrap;">{{ (float) $detail->quantity }} x Rp{{ number_format($detail->price, 0, ',', '.') }}</span>
-                        <strong class="flex-right" style="color: #000;">Rp{{ number_format($detail->subtotal, 0, ',', '.') }}</strong>
-                    </div>
+                    {{-- qty x harga | subtotal --}}
+                    <table class="r-table">
+                        <tr>
+                            <td class="col-left" style="color: #444;">
+                                {{ (float) $detail->quantity }} x Rp{{ number_format($detail->price, 0, ',', '.') }}
+                            </td>
+                            <td class="col-right" style="font-weight: 700;">
+                                Rp{{ number_format($detail->subtotal, 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             @endforeach
         </div>
@@ -173,24 +191,24 @@
         <div class="receipt-divider"></div>
 
         <!-- Totals -->
-        <div class="receipt-totals">
-            <div class="flex-row" style="display: flex; justify-content: space-between;">
-                <span class="flex-left">TOTAL:</span>
-                <strong class="flex-right">Rp {{ number_format($transaction->total_price, 0, ',', '.') }}</strong>
-            </div>
-            <div class="flex-row" style="display: flex; justify-content: space-between;">
-                <span class="flex-left">TUNAI:</span>
-                <span class="flex-right">Rp {{ number_format($transaction->payment_amount, 0, ',', '.') }}</span>
-            </div>
-            <div class="flex-row" style="display: flex; justify-content: space-between; font-weight: 700;">
-                <span class="flex-left">KEMBALI:</span>
-                <span class="flex-right">Rp {{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
-            </div>
-        </div>
+        <table class="r-table" style="margin-bottom: 5px;">
+            <tr>
+                <td class="col-left">TOTAL</td>
+                <td class="col-right"><strong>Rp{{ number_format($transaction->total_price, 0, ',', '.') }}</strong></td>
+            </tr>
+            <tr>
+                <td class="col-left">TUNAI</td>
+                <td class="col-right">Rp{{ number_format($transaction->payment_amount, 0, ',', '.') }}</td>
+            </tr>
+            <tr style="font-weight: 700;">
+                <td class="col-left">KEMBALI</td>
+                <td class="col-right">Rp{{ number_format($transaction->change_amount, 0, ',', '.') }}</td>
+            </tr>
+        </table>
 
         <div class="receipt-divider"></div>
 
-        <div style="text-align: center; font-size: 10px; margin-top: 10px; margin-bottom: 4px;">
+        <div style="text-align: center; font-size: 9px; margin-top: 6px; margin-bottom: 4px; font-family: 'Outfit', sans-serif;">
             <p style="font-weight: 700; margin-bottom: 2px;">TERIMA KASIH</p>
             <p style="color: #555;">Atas Kunjungan Anda</p>
         </div>
@@ -215,4 +233,3 @@
     </script>
 </body>
 </html>
-
