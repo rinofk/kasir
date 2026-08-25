@@ -51,35 +51,38 @@
 
         /* ===== PRINT ===== */
         @page {
-            size: 58mm auto;   /* paksa ukuran kertas 58mm */
-            margin: 2mm 1mm;   /* margin minimal di tepi */
+            size: 58mm 210mm;  /* cocokkan dengan "Printer Paper(58 x 210mm)" di driver */
+            margin: 0;         /* margin 0 — biarkan printer driver yg atur */
         }
 
         @media print {
             /* Reset body — hapus semua padding/height layar */
-            html { height: auto !important; }
-            body {
+            html, body {
                 background: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
                 width: 100% !important;
                 height: auto !important;
                 min-height: 0 !important;
+                max-height: none !important;
                 font-size: 8pt !important;
                 -webkit-print-color-adjust: exact;
+                overflow: visible !important;
             }
 
             /* Sembunyikan tombol */
             .no-print { display: none !important; }
 
-            /* Kotak struk: ikuti full lebar kertas */
+            /* Kotak struk: ikuti full lebar kertas, beri sedikit padding agar tidak mentok tepi */
             .wrap {
                 width: 100% !important;
                 max-width: 100% !important;
                 margin: 0 !important;
-                padding: 0 !important;
+                padding: 1mm 2mm !important;  /* pengganti @page margin */
                 box-shadow: none !important;
                 height: auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
             }
 
             /* Tabel */
