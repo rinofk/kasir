@@ -97,7 +97,7 @@
         /* Eksplisit set ukuran kertas thermal 58mm */
         @page {
             size: 57mm auto;
-            margin: 2mm 1mm;
+            margin: 2mm 4mm 2mm 1mm;
         }
 
         @media print {
