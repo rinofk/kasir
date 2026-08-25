@@ -97,7 +97,23 @@
                 width: 100% !important;
                 margin: 0 !important;
                 box-shadow: none !important;
-                padding: 0 !important;
+                padding: 2mm 3mm !important;
+            }
+            .receipt-paper * {
+                word-break: break-word;
+            }
+            .flex-row {
+                display: flex !important;
+                justify-content: space-between !important;
+            }
+            .flex-row .flex-left {
+                min-width: 0;
+                flex: 1 1 auto;
+                padding-right: 4px;
+            }
+            .flex-row .flex-right {
+                flex: 0 0 auto;
+                white-space: nowrap;
             }
             .no-print {
                 display: none !important;
@@ -123,17 +139,17 @@
         <div class="receipt-divider"></div>
 
         <div style="font-size: 10px; margin-bottom: 6px; line-height: 1.5;">
-            <div style="display: flex; justify-content: space-between;">
-                <strong>No. Invoice:</strong>
-                <span>{{ $transaction->invoice_number }}</span>
+            <div class="flex-row" style="display: flex; justify-content: space-between;">
+                <strong class="flex-left">No. Invoice:</strong>
+                <span class="flex-right">{{ $transaction->invoice_number }}</span>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-                <strong>Waktu:</strong>
-                <span>{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
+            <div class="flex-row" style="display: flex; justify-content: space-between;">
+                <strong class="flex-left">Waktu:</strong>
+                <span class="flex-right">{{ $transaction->created_at->format('d/m/Y H:i') }}</span>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-                <strong>Kasir:</strong>
-                <span>{{ $transaction->user->name }}</span>
+            <div class="flex-row" style="display: flex; justify-content: space-between;">
+                <strong class="flex-left">Kasir:</strong>
+                <span class="flex-right">{{ $transaction->user->name }}</span>
             </div>
         </div>
 
@@ -146,9 +162,9 @@
                     <div style="font-size: 11px; font-weight: 600; color: #000;">
                         {{ $detail->product_id ? $detail->product->name : $detail->custom_name }}
                     </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 10px; color: #333; margin-top: 1px;">
-                        <span>Rp{{ number_format($detail->price, 0, ',', '.') }} x {{ (float) $detail->quantity }}</span>
-                        <strong style="color: #000; font-size: 11px;">Rp{{ number_format($detail->subtotal, 0, ',', '.') }}</strong>
+                    <div class="flex-row" style="display: flex; justify-content: space-between; font-size: 10px; color: #333; margin-top: 1px;">
+                        <span class="flex-left">Rp{{ number_format($detail->price, 0, ',', '.') }} x {{ (float) $detail->quantity }}</span>
+                        <strong class="flex-right" style="color: #000; font-size: 11px;">Rp{{ number_format($detail->subtotal, 0, ',', '.') }}</strong>
                     </div>
                 </div>
             @endforeach
@@ -158,17 +174,17 @@
 
         <!-- Totals -->
         <div class="receipt-totals">
-            <div style="display: flex; justify-content: space-between;">
-                <span>TOTAL:</span>
-                <strong>Rp {{ number_format($transaction->total_price, 0, ',', '.') }}</strong>
+            <div class="flex-row" style="display: flex; justify-content: space-between;">
+                <span class="flex-left">TOTAL:</span>
+                <strong class="flex-right">Rp {{ number_format($transaction->total_price, 0, ',', '.') }}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-                <span>TUNAI:</span>
-                <span>Rp {{ number_format($transaction->payment_amount, 0, ',', '.') }}</span>
+            <div class="flex-row" style="display: flex; justify-content: space-between;">
+                <span class="flex-left">TUNAI:</span>
+                <span class="flex-right">Rp {{ number_format($transaction->payment_amount, 0, ',', '.') }}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; font-weight: 700;">
-                <span>KEMBALI:</span>
-                <span>Rp {{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
+            <div class="flex-row" style="display: flex; justify-content: space-between; font-weight: 700;">
+                <span class="flex-left">KEMBALI:</span>
+                <span class="flex-right">Rp {{ number_format($transaction->change_amount, 0, ',', '.') }}</span>
             </div>
         </div>
 
