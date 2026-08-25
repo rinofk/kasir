@@ -96,7 +96,7 @@
         /* ===== PRINT STYLES ===== */
         /* Eksplisit set ukuran kertas thermal 58mm */
         @page {
-            size: 58mm auto;
+            size: 57mm auto;
             margin: 2mm 1mm;
         }
 
@@ -106,12 +106,12 @@
                 display: block !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                width: 58mm !important;
+                width: 57mm !important;
                 min-height: 0 !important;
                 height: auto !important;
             }
             .receipt-paper {
-                width: 58mm !important;
+                width: 57mm !important;
                 margin: 0 !important;
                 box-shadow: none !important;
                 padding: 0 !important;
