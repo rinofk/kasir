@@ -83,29 +83,41 @@
 @section('content')
     <div class="card">
         <div class="card-header">
-            <div style="display: flex; gap: 16px; align-items: center; width: 100%; justify-content: space-between; flex-wrap: wrap;">
-                <form id="searchForm" action="{{ route('products.index') }}" method="GET" style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1; max-width: 600px;">
-                    <div style="display: flex; gap: 8px; width: 100%; align-items: center;">
-                        <div style="position: relative; flex-grow: 1; display: flex; align-items: center;">
-                            <input type="text" id="productSearch" name="search" class="form-control" placeholder="Cari barcode, kode, nama..." value="{{ $search }}" style="flex-grow: 1; padding-right: 36px;">
-                            <button type="button" id="clearSearch" style="position: absolute; right: 8px; background: none; border: none; color: var(--text-secondary); cursor: pointer; display: {{ $search ? 'flex' : 'none' }}; align-items: center; justify-content: center; width: 24px; height: 24px; outline: none; font-size: 16px; padding: 0;">
+            <div style="display: flex; gap: 12px; align-items: center; width: 100%; justify-content: space-between; flex-wrap: wrap;">
+                <form id="searchForm" action="{{ route('products.index') }}" method="GET" style="display: flex; gap: 8px; flex-grow: 1; max-width: 600px; align-items: center;">
+                    <input type="hidden" name="category_id" id="filter_category_input" value="{{ $categoryId }}">
+                    
+                    <div style="position: relative; flex-grow: 1; display: flex; align-items: center;">
+                        <input type="text" id="productSearch" name="search" class="form-control" placeholder="Cari barcode, kode, nama..." value="{{ $search }}" style="flex-grow: 1; padding-right: 64px;">
+                        
+                        <div style="position: absolute; right: 8px; display: flex; align-items: center; gap: 4px;">
+                            <button type="button" id="clearSearch" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; display: {{ $search ? 'flex' : 'none' }}; align-items: center; justify-content: center; width: 24px; height: 24px; outline: none; font-size: 15px; padding: 0;" title="Hapus pencarian">
                                 <i class="fa-solid fa-circle-xmark"></i>
                             </button>
+                            <button type="button" onclick="startCameraScanner('productSearch')" style="background: none; border: none; color: var(--accent); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; outline: none; font-size: 16px; padding: 0;" title="Scan Barcode Kamera">
+                                <i class="fa-solid fa-barcode"></i>
+                            </button>
                         </div>
-                        <button type="submit" class="btn btn-secondary" style="white-space: nowrap;"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
                     </div>
-                    <select name="category_id" id="filter_category_select" class="form-control">
-                        <option value="">Semua Kategori</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}" {{ $categoryId == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
-                        @endforeach
-                    </select>
+
+                    <!-- Tombol Cari (Icon Only) -->
+                    <button type="submit" class="btn btn-secondary" style="width: 42px; height: 42px; min-height: 42px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Cari">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+
+                    <!-- Tombol Filter Kategori (Icon Only, Sebelah Icon Cari) -->
+                    <button type="button" onclick="openCategoryFilterDialog()" class="btn {{ $categoryId ? 'btn-primary' : 'btn-secondary' }}" style="width: 42px; height: 42px; min-height: 42px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;" title="Filter Kategori">
+                        <i class="fa-solid fa-filter"></i>
+                        @if($categoryId)
+                            <span style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 1.5px solid #fff;"></span>
+                        @endif
+                    </button>
                 </form>
                 <button type="button" id="btnBulkPrintLabels" class="btn btn-secondary" style="display: none; align-items: center; gap: 8px;" onclick="printSelectedLabels()">
                     <i class="fa-solid fa-tags" style="color: var(--accent);"></i> Cetak Label (<span id="selectedCount">0</span>)
                 </button>
-                <button onclick="openAddModal()" class="btn btn-primary">
-                    <i class="fa-solid fa-plus"></i> Tambah Produk
+                <button onclick="openAddModal()" class="btn btn-primary btn-desktop-add-product">
+                    Tambah Produk
                 </button>
             </div>
         </div>
@@ -122,27 +134,26 @@
                     </button>
                 @endforeach
             </div>
-            <div class="table-responsive">
+            <div class="table-responsive table-responsive-card table-responsive-products-desktop">
                 <table class="table">
                     <thead>
                         <tr>
-                            <th class="col-hide-mobile" style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllProducts" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"></th>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllProducts" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"></th>
                             <th style="width: 60px; text-align: center;">Foto</th>
-                            <th class="col-hide-mobile">Kode/Barcode</th>
-                            <th class="col-hide-mobile">Nama Produk</th>
-                            <th class="col-show-mobile">Produk</th>
-                            <th class="col-hide-mobile">Kategori</th>
-                            <th class="col-hide-mobile">Harga Beli</th>
-                             <th style="text-align: right;">Harga Jual</th>
-                            <th class="col-hide-mobile">Stok</th>
-                            <th class="col-hide-mobile" style="width: 170px;">Aksi</th>
+                            <th>Barcode</th>
+                            <th>Nama Produk</th>
+                            <th>Kategori</th>
+                            <th>Harga Beli</th>
+                            <th style="text-align: right;">Harga Jual</th>
+                            <th>Stok</th>
+                            <th style="width: 170px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($products as $product)
                             <tr>
-                                <td class="col-hide-mobile" style="text-align: center;"><input type="checkbox" class="product-select-checkbox" value="{{ $product->id }}" onchange="updateSelectedCount()" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"></td>
-                                <td style="text-align: center; vertical-align: middle;">
+                                <td style="text-align: center;"><input type="checkbox" class="product-select-checkbox" value="{{ $product->id }}" onchange="updateSelectedCount()" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);"></td>
+                                <td data-label="Foto" style="text-align: center; vertical-align: middle;">
                                     @if($product->image && file_exists(public_path($product->image)))
                                         <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
                                     @else
@@ -151,26 +162,20 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td class="col-hide-mobile">
+                                <td data-label="Barcode">
                                     <span class="clickable-product-detail" onclick="openShowModal({{ json_encode($product) }})">
                                         <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: var(--accent);">{{ $product->code }}</code>
                                     </span>
                                 </td>
-                                <td class="col-hide-mobile">
+                                <td data-label="Nama Produk">
                                     <span class="clickable-product-detail" onclick="openShowModal({{ json_encode($product) }})">
                                         <strong>{{ $product->name }}</strong>
                                     </span>
                                 </td>
-                                <td class="col-show-mobile" style="vertical-align: middle;">
-                                    <span class="clickable-product-detail" onclick="openShowModal({{ json_encode($product) }})" style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                                        <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: 600; color: var(--accent); font-size: 11px;">{{ $product->code }}</code>
-                                        <strong style="font-size: 14px; color: var(--text-primary);">{{ $product->name }}</strong>
-                                    </span>
-                                </td>
-                                <td class="col-hide-mobile">{{ $product->category->name }}</td>
-                                <td class="col-hide-mobile">Rp {{ number_format($product->purchase_price, 0, ',', '.') }}</td>
-                                 <td style="white-space: nowrap; text-align: right;"><strong>Rp {{ number_format($product->selling_price, 0, ',', '.') }}</strong></td>
-                                <td class="col-hide-mobile">
+                                <td data-label="Kategori">{{ $product->category->name }}</td>
+                                <td data-label="Harga Beli">Rp {{ number_format($product->purchase_price, 0, ',', '.') }}</td>
+                                <td data-label="Harga Jual" style="white-space: nowrap; text-align: right;"><strong>Rp {{ number_format($product->selling_price, 0, ',', '.') }}</strong></td>
+                                <td data-label="Stok">
                                     @if($product->stock <= 5)
                                         <span class="badge badge-danger" style="font-size: 13px;">{{ rtrim(rtrim(number_format($product->stock, 3, ',', '.'), '0'), ',') }} {{ $product->unit }} (Kritis)</span>
                                     @elseif($product->stock <= 15)
@@ -179,7 +184,7 @@
                                         <span class="badge badge-success" style="font-size: 13px;">{{ rtrim(rtrim(number_format($product->stock, 3, ',', '.'), '0'), ',') }} {{ $product->unit }}</span>
                                     @endif
                                 </td>
-                                <td class="col-hide-mobile">
+                                <td data-label="Aksi">
                                     <div style="display: flex; gap: 8px;">
                                         <button onclick="openShowModal({{ json_encode($product) }})" class="btn" style="padding: 6px 10px; background-color: rgba(79, 70, 229, 0.08); color: var(--accent); border: 1px solid rgba(79, 70, 229, 0.15); display: flex; align-items: center; justify-content: center;" title="Detail Produk">
                                             <i class="fa-solid fa-circle-info"></i>
@@ -210,6 +215,89 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Mobile Product Cards Container (Matching User Screenshot) -->
+            <div class="mobile-product-cards-container" style="padding: 12px;">
+                @forelse($products as $product)
+                    <div class="mp-card">
+                        <!-- Top Section: Thumbnail & Title & Beli/Jual Prices -->
+                        <div class="mp-card-header">
+                            @if($product->image && file_exists(public_path($product->image)))
+                                <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" class="mp-card-thumb" onclick="openShowModal({{ json_encode($product) }})">
+                            @else
+                                <div class="mp-card-thumb-placeholder" onclick="openShowModal({{ json_encode($product) }})">
+                                    <i class="fa-solid fa-box"></i>
+                                </div>
+                            @endif
+
+                            <div class="mp-card-main-info">
+                                <div class="mp-card-title" onclick="openShowModal({{ json_encode($product) }})">{{ $product->name }}</div>
+                                <div class="mp-card-price-row">
+                                    <span>Beli</span>
+                                    <span class="price-val">Rp {{ number_format($product->purchase_price, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="mp-card-price-row jual">
+                                    <span>Jual</span>
+                                    <span class="price-val">Rp {{ number_format($product->selling_price, 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mp-card-divider"></div>
+
+                        <!-- 2-Column Key Value Metadata Grid -->
+                        <div class="mp-card-meta-grid">
+                            <div class="mp-meta-item">
+                                <span class="mp-meta-label">Terdaftar</span>
+                                <span class="mp-meta-value">{{ $product->created_at ? $product->created_at->format('d M Y') : '-' }}</span>
+                            </div>
+                            <div class="mp-meta-item">
+                                <span class="mp-meta-label">Kategori</span>
+                                <span class="mp-meta-value" style="color: var(--accent);">{{ $product->category->name }}</span>
+                            </div>
+
+                            <div class="mp-meta-item">
+                                <span class="mp-meta-label">Stok</span>
+                                <span class="mp-meta-value">
+                                    @if($product->stock <= 0)
+                                        <span style="color: var(--danger);">Habis</span>
+                                    @else
+                                        {{ rtrim(rtrim(number_format($product->stock, 3, ',', '.'), '0'), ',') }} {{ $product->unit }}
+                                    @endif
+                                </span>
+                            </div>
+                            <div class="mp-meta-item">
+                                <span class="mp-meta-label">Barcode</span>
+                                <span class="mp-meta-value"><code>{{ $product->code }}</code></span>
+                            </div>
+
+                            <div class="mp-meta-item">
+                                <span class="mp-meta-label">Manajemen Stok</span>
+                                <span class="mp-meta-value">Ya</span>
+                            </div>
+                            <div class="mp-meta-item">
+                                <span class="mp-meta-label">Satuan</span>
+                                <span class="mp-meta-value">{{ $product->unit ?? 'pcs' }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons: Ubah (edit) & 3 Dots (More options) -->
+                        <div class="mp-card-actions">
+                            <button type="button" onclick="openEditModal({{ json_encode($product) }})" class="mp-btn-edit">
+                                Ubah
+                            </button>
+                            <button type="button" onclick="showProductMobileMenu({{ json_encode($product) }})" class="mp-btn-more" title="Opsi Lainnya">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                        </div>
+                    </div>
+                @empty
+                    <div style="text-align: center; color: var(--text-secondary); padding: 40px 16px; background: #fff; border-radius: var(--radius-md); border: 1px dashed var(--border-color);">
+                        <i class="fa-solid fa-box-open" style="font-size: 36px; margin-bottom: 12px; opacity: 0.5;"></i>
+                        <p>Produk tidak ditemukan.</p>
+                    </div>
+                @endforelse
+            </div>
             
             @if($products->hasPages())
                 <div style="padding: 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: center;">
@@ -217,6 +305,13 @@
                 </div>
             @endif
         </div>
+    </div>
+
+    <!-- Mobile Fixed Bottom Bar (Red Action Button) -->
+    <div class="mobile-fixed-bottom-bar">
+        <button type="button" onclick="openAddModal()" class="btn-mobile-add-product">
+            Tambah Produk
+        </button>
     </div>
 
     <!-- Add Product Modal -->
@@ -529,6 +624,11 @@
                 // Dispatch change event programmatically so event listeners run
                 const event = new Event('change', { bubbles: true });
                 inputEl.dispatchEvent(event);
+
+                if (activeTargetInputId === 'productSearch') {
+                    const searchForm = document.getElementById('searchForm');
+                    if (searchForm) searchForm.submit();
+                }
             }
             
             closeCameraScanner();
@@ -1261,5 +1361,108 @@
             const infoAlert = document.getElementById('add_code_alert');
             if (infoAlert) infoAlert.remove();
         }
+
+        function showProductMobileMenu(product) {
+            Swal.fire({
+                title: product.name,
+                text: `Kode: ${product.code} | Stok: ${product.stock} ${product.unit || 'pcs'}`,
+                showCancelButton: true,
+                showConfirmButton: false,
+                cancelButtonText: 'Tutup',
+                cancelButtonColor: '#64748b',
+                html: `
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px;">
+                        <button type="button" onclick="Swal.close(); openShowModal(${JSON.stringify(product).replace(/"/g, '&quot;')});" class="btn btn-secondary" style="width: 100%; padding: 12px; justify-content: flex-start; gap: 10px; font-weight: 600;">
+                            <i class="fa-solid fa-circle-info" style="color: var(--accent);"></i> Detail Produk Lengkap
+                        </button>
+                        <a href="/products/print-labels?product_ids=${product.id}" target="_blank" onclick="Swal.close();" class="btn btn-secondary" style="width: 100%; padding: 12px; justify-content: flex-start; gap: 10px; text-decoration: none; color: var(--text-primary); font-weight: 600;">
+                            <i class="fa-solid fa-barcode" style="color: var(--accent);"></i> Cetak Label Barcode
+                        </a>
+                        <button type="button" onclick="Swal.close(); confirmDeleteProduct(${product.id}, '${product.name.replace(/'/g, "\\'")}');" class="btn btn-danger" style="width: 100%; padding: 12px; justify-content: flex-start; gap: 10px; font-weight: 600;">
+                            <i class="fa-solid fa-trash"></i> Hapus Produk
+                        </button>
+                    </div>
+                `
+            });
+        }
+
+        function confirmDeleteProduct(productId, productName) {
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: `Apakah Anda yakin ingin menghapus produk '${productName}' ini?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/products/${productId}`;
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '';
+                    form.innerHTML = `
+                        <input type="hidden" name="_token" value="${csrfToken}">
+                        <input type="hidden" name="_method" value="DELETE">
+                    `;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function openCategoryFilterDialog() {
+            const categories = @json($categories);
+            const currentCatId = "{{ $categoryId }}";
+            
+            let optionsHtml = `
+                <div style="display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; text-align: left; padding: 4px;">
+                    <button type="button" onclick="selectCategoryFilter('')" class="btn ${!currentCatId ? 'btn-primary' : 'btn-secondary'}" style="width: 100%; justify-content: space-between; padding: 12px 16px; font-weight: 600;">
+                        <span>Semua Kategori</span>
+                        ${!currentCatId ? '<i class="fa-solid fa-check"></i>' : ''}
+                    </button>
+            `;
+            
+            categories.forEach(cat => {
+                const isSelected = String(cat.id) === String(currentCatId);
+                optionsHtml += `
+                    <button type="button" onclick="selectCategoryFilter('${cat.id}')" class="btn ${isSelected ? 'btn-primary' : 'btn-secondary'}" style="width: 100%; justify-content: space-between; padding: 12px 16px; font-weight: 600;">
+                        <span>${cat.name}</span>
+                        ${isSelected ? '<i class="fa-solid fa-check"></i>' : ''}
+                    </button>
+                `;
+            });
+            
+            optionsHtml += `</div>`;
+
+            Swal.fire({
+                title: 'Pilih Kategori',
+                html: optionsHtml,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'Tutup',
+                cancelButtonColor: '#64748b'
+            });
+        }
+
+        function selectCategoryFilter(catId) {
+            Swal.close();
+            const input = document.getElementById('filter_category_input');
+            if (input) {
+                input.value = catId;
+            }
+            document.getElementById('searchForm').submit();
+        }
+
+        // Connect category tabs pill buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.cat-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const catId = this.getAttribute('data-id');
+                    selectCategoryFilter(catId);
+                });
+            });
+        });
     </script>
 @endsection

@@ -59,7 +59,7 @@
                     <a href="{{ route('reports.index') }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Lihat Semua</a>
                 </div>
                 <div class="card-body" style="padding: 0;">
-                    <div class="table-responsive">
+                    <div class="table-responsive table-responsive-card">
                         <table class="table">
                             <thead>
                                 <tr>
@@ -73,13 +73,13 @@
                             <tbody>
                                 @forelse($recentTransactions as $tx)
                                     <tr>
-                                        <td><strong>{{ $tx->invoice_number }}</strong></td>
-                                        <td>{{ $tx->user->name }}</td>
-                                        <td>Rp {{ number_format($tx->total_price, 0, ',', '.') }}</td>
-                                        <td>{{ $tx->created_at->format('d M Y, H:i') }}</td>
-                                        <td>
+                                        <td data-label="Nomor Invoice"><strong>{{ $tx->invoice_number }}</strong></td>
+                                        <td data-label="Kasir">{{ $tx->user->name }}</td>
+                                        <td data-label="Total Belanja">Rp {{ number_format($tx->total_price, 0, ',', '.') }}</td>
+                                        <td data-label="Waktu">{{ $tx->created_at->format('d M Y, H:i') }}</td>
+                                        <td data-label="Aksi">
                                             <a href="{{ route('pos.receipt', $tx->id) }}" target="_blank" class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" title="Cetak Struk">
-                                                <i class="fa-solid fa-print"></i>
+                                                <i class="fa-solid fa-print"></i> Cetak Struk
                                             </a>
                                         </td>
                                     </tr>

@@ -445,6 +445,24 @@
 
     </div>
 
+    <!-- Mobile Floating Cart Bar (Visible on mobile when cart has items) -->
+    <div id="mobileCartBar" class="mobile-cart-bar" onclick="scrollToMobileCart()">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: var(--accent); border-radius: 50%;">
+                <i class="fa-solid fa-shopping-cart" style="font-size: 16px; color: #fff;"></i>
+                <span id="mobileCartBadge" style="position: absolute; top: -4px; right: -4px; background: var(--danger); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 999px; border: 2px solid #0f172a;">0</span>
+            </div>
+            <div style="display: flex; flex-direction: column;">
+                <span style="font-size: 12px; color: #94a3b8; font-weight: 500;">Total Keranjang</span>
+                <span id="mobileCartTotal" style="font-size: 16px; font-weight: 800; color: #ffffff;">Rp 0</span>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #818cf8;">
+            <span>Lihat & Bayar</span>
+            <i class="fa-solid fa-arrow-down"></i>
+        </div>
+    </div>
+
     <!-- Success Checkout Modal -->
     <div id="checkoutSuccessModal" class="modal">
         <div class="modal-content" style="max-width: 420px; text-align: center;">
@@ -842,7 +860,35 @@
             }
         }
 
+        function updateMobileCartBar(grandTotal, totalItemsCount) {
+            const bar = document.getElementById('mobileCartBar');
+            const badge = document.getElementById('mobileCartBadge');
+            const totalTxt = document.getElementById('mobileCartTotal');
+
+            if (!bar) return;
+
+            if (totalItemsCount > 0 && window.innerWidth <= 992) {
+                bar.style.display = 'flex';
+                if (badge) badge.textContent = totalItemsCount;
+                if (totalTxt) totalTxt.textContent = formatRupiah(grandTotal);
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+
+        function scrollToMobileCart() {
+            const cartEl = document.querySelector('.pos-cart');
+            if (cartEl) {
+                cartEl.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
         function renderCart() {
+            let totalItemsCount = 0;
+            cart.forEach(item => {
+                totalItemsCount += (parseFloat(item.qty) || 1);
+            });
+
             if (cart.length === 0) {
                 cartContainer.innerHTML = '';
                 cartContainer.appendChild(emptyCartMessage);
@@ -853,6 +899,7 @@
                 btnCheckout.disabled = true;
                 txtSubtotal.textContent = 'Rp 0';
                 txtTotal.textContent = 'Rp 0';
+                updateMobileCartBar(0, 0);
                 return;
             }
 
@@ -873,13 +920,13 @@
                         </div>
                         <div class="pos-cart-item-qty">
                             <button type="button" onclick="updateQty('${item.id}', -1)" class="qty-btn">-</button>
-                            <input type="number" step="any" min="0.001" value="${item.qty}" onchange="setQty('${item.id}', this.value)" class="form-control" style="width: 75px; text-align: center; font-weight: 600; padding: 2px 4px; height: 30px; margin: 0 4px; font-size: 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                            <input type="number" step="any" min="0.001" value="${item.qty}" onchange="setQty('${item.id}', this.value)" class="form-control" style="width: 75px; text-align: center; font-weight: 600; padding: 2px 4px; height: 38px; margin: 0 4px; font-size: 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
                             <button type="button" onclick="updateQty('${item.id}', 1)" class="qty-btn">+</button>
                         </div>
                         <div class="pos-cart-item-subtotal">
                             ${formatRupiah(subtotal)}
                         </div>
-                        <button type="button" onclick="removeItem('${item.id}')" style="background: none; border: none; color: var(--danger); cursor: pointer; margin-left: 12px; font-size: 14px;">
+                        <button type="button" onclick="removeItem('${item.id}')" style="background: none; border: none; color: var(--danger); cursor: pointer; margin-left: 12px; font-size: 16px; padding: 8px;" title="Hapus">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
                     </div>
@@ -892,6 +939,7 @@
 
             paymentAmountInput.disabled = false;
             calculateChange(grandTotal);
+            updateMobileCartBar(grandTotal, totalItemsCount);
         }
 
         function calculateChange(total) {

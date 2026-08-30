@@ -12,7 +12,7 @@
             </button>
         </div>
         <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-responsive table-responsive-card">
                 <table class="table">
                     <thead>
                         <tr>
@@ -24,13 +24,13 @@
                     <tbody>
                         @foreach($roles as $role)
                             <tr>
-                                <td>
+                                <td data-label="Nama Role">
                                     <strong style="text-transform: uppercase;">{{ $role->name }}</strong>
                                     @if($role->name === 'admin')
                                         <span class="badge badge-danger" style="margin-left: 8px;">Sistem Utama</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Permissions">
                                     <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                                         @forelse($role->permissions as $perm)
                                             <span class="badge badge-primary" style="font-size: 11px;">{{ $perm->name }}</span>
@@ -39,7 +39,7 @@
                                         @endforelse
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Aksi">
                                     <div style="display: flex; gap: 8px;">
                                         <button onclick="openEditModal({{ json_encode($role) }}, {{ json_encode($role->permissions->pluck('name')) }})" class="btn btn-secondary" style="padding: 6px 10px;" title="Edit">
                                             <i class="fa-solid fa-pen-to-square"></i>

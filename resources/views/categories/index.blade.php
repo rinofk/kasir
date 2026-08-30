@@ -17,7 +17,7 @@
             </div>
         </div>
         <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-responsive table-responsive-card">
                 <table class="table">
                     <thead>
                         <tr>
@@ -32,14 +32,14 @@
                     <tbody>
                         @forelse($categories as $category)
                             <tr>
-                                <td style="text-align: center; color: var(--text-secondary);">
+                                <td data-label="No" style="text-align: center; color: var(--text-secondary);">
                                     {{ ($categories->currentPage() - 1) * $categories->perPage() + $loop->iteration }}
                                 </td>
-                                <td><strong>{{ $category->name }}</strong></td>
-                                <td><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">{{ $category->slug }}</code></td>
-                                <td>{{ $category->description ?? '-' }}</td>
-                                <td><span class="badge badge-primary">{{ $category->products_count }} Produk</span></td>
-                                <td>
+                                <td data-label="Nama"><strong>{{ $category->name }}</strong></td>
+                                <td data-label="Slug"><code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">{{ $category->slug }}</code></td>
+                                <td data-label="Deskripsi">{{ $category->description ?? '-' }}</td>
+                                <td data-label="Jumlah Produk"><span class="badge badge-primary">{{ $category->products_count }} Produk</span></td>
+                                <td data-label="Aksi">
                                     <div style="display: flex; gap: 8px;">
                                         <button onclick="openEditModal({{ json_encode($category) }})" class="btn btn-secondary" style="padding: 6px 10px;" title="Edit">
                                             <i class="fa-solid fa-pen-to-square"></i>

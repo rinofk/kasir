@@ -70,7 +70,7 @@
             </div>
         </div>
         <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-responsive table-responsive-card">
                 <table class="table">
                     <thead>
                         <tr>
@@ -83,18 +83,18 @@
                     <tbody>
                         @forelse($histories as $history)
                             <tr>
-                                <td style="text-align: center; color: var(--text-secondary);">
+                                <td data-label="No" style="text-align: center; color: var(--text-secondary);">
                                     {{ ($histories->currentPage() - 1) * $histories->perPage() + $loop->iteration }}
                                 </td>
-                                <td>
+                                <td data-label="Alamat IP">
                                     <span class="badge badge-secondary" style="font-size: 13px; font-family: monospace;">{{ $history->ip_address ?? 'N/A' }}</span>
                                 </td>
-                                <td style="max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $history->user_agent }}">
+                                <td data-label="Perangkat" style="max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $history->user_agent }}">
                                     <span style="font-size: 13px; color: var(--text-secondary);">
                                         <i class="fa-solid fa-laptop-code" style="margin-right: 6px;"></i>{{ $history->user_agent }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Waktu Login">
                                     <span style="font-size: 13px;">
                                         <i class="fa-regular fa-clock" style="color: var(--accent); margin-right: 4px;"></i>
                                         {{ $history->login_at ? $history->login_at->translatedFormat('d M Y, H:i:s') : 'N/A' }} WIB

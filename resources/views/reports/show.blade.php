@@ -10,14 +10,14 @@
         </a>
     </div>
 
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;">
+    <div class="dashboard-layout" style="align-items: start;">
         <!-- Left: Items list -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title"><i class="fa-solid fa-cart-shopping"></i> Daftar Barang Belanja</span>
             </div>
             <div class="card-body" style="padding: 0;">
-                <div class="table-responsive">
+                <div class="table-responsive table-responsive-card">
                     <table class="table">
                         <thead>
                             <tr>
@@ -32,12 +32,12 @@
                         <tbody>
                             @foreach($transaction->details as $detail)
                                 <tr>
-                                    <td><code>{{ $detail->product_id ? ($detail->product->code ?? 'N/A') : 'MANUAL' }}</code></td>
-                                    <td><strong>{{ $detail->product_id ? ($detail->product->name ?? 'Produk Telah Dihapus') : $detail->custom_name }}</strong></td>
-                                    <td>{{ $detail->product_id ? ($detail->product->category->name ?? 'N/A') : 'Manual' }}</td>
-                                    <td style="text-align: right;">Rp {{ number_format($detail->price, 0, ',', '.') }}</td>
-                                    <td style="text-align: center;">{{ (float) $detail->quantity }}</td>
-                                    <td style="text-align: right;"><strong>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</strong></td>
+                                    <td data-label="Kode Produk"><code>{{ $detail->product_id ? ($detail->product->code ?? 'N/A') : 'MANUAL' }}</code></td>
+                                    <td data-label="Nama Produk"><strong>{{ $detail->product_id ? ($detail->product->name ?? 'Produk Telah Dihapus') : $detail->custom_name }}</strong></td>
+                                    <td data-label="Kategori">{{ $detail->product_id ? ($detail->product->category->name ?? 'N/A') : 'Manual' }}</td>
+                                    <td data-label="Harga Satuan" style="text-align: right;">Rp {{ number_format($detail->price, 0, ',', '.') }}</td>
+                                    <td data-label="Jumlah Qty" style="text-align: center;">{{ (float) $detail->quantity }}</td>
+                                    <td data-label="Subtotal" style="text-align: right;"><strong>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</strong></td>
                                 </tr>
                             @endforeach
                         </tbody>

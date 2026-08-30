@@ -23,7 +23,7 @@
             </div>
         </div>
         <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-responsive table-responsive-card">
                 <table class="table">
                     <thead>
                         <tr>
@@ -39,10 +39,10 @@
                     <tbody>
                         @forelse($users as $user)
                             <tr style="cursor: pointer;" onclick="window.location='{{ route('login-histories.show-user', $user->id) }}{{ $date ? '?date='.$date : '' }}'">
-                                <td style="text-align: center; color: var(--text-secondary);">
+                                <td data-label="No" style="text-align: center; color: var(--text-secondary);">
                                     {{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}
                                 </td>
-                                <td>
+                                <td data-label="Nama Staff">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #6366f1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                             <i class="fa-solid fa-user" style="color: #fff; font-size: 14px;"></i>
@@ -55,18 +55,18 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td style="color: var(--text-secondary);">{{ $user->email }}</td>
-                                <td>
+                                <td data-label="Email" style="color: var(--text-secondary);">{{ $user->email }}</td>
+                                <td data-label="Role">
                                     @foreach($user->roles as $role)
                                         <span class="badge badge-primary" style="text-transform: capitalize;">{{ $role->name }}</span>
                                     @endforeach
                                 </td>
-                                <td style="text-align: center;">
+                                <td data-label="Total Login" style="text-align: center;">
                                     <span style="display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--accent), #6366f1); color: #fff; font-weight: 700; font-size: 15px; width: 42px; height: 42px; border-radius: 50%; box-shadow: 0 4px 10px -2px rgba(79,70,229,0.35);">
                                         {{ $user->total_logins }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Login Terakhir">
                                     @if($user->last_login)
                                         <span style="font-size: 13px;">
                                             <i class="fa-regular fa-clock" style="color: var(--accent); margin-right: 4px;"></i>
@@ -76,7 +76,7 @@
                                         <span style="color: var(--text-secondary);">-</span>
                                     @endif
                                 </td>
-                                <td style="text-align: center;">
+                                <td data-label="Aksi" style="text-align: center;">
                                     <a href="{{ route('login-histories.show-user', $user->id) }}{{ $date ? '?date='.$date : '' }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 13px;" title="Lihat Detail Login">
                                         <i class="fa-solid fa-eye" style="color: var(--accent);"></i> Detail
                                     </a>

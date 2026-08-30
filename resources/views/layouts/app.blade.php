@@ -55,6 +55,8 @@
     @yield('styles')
 </head>
 <body>
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
     <!-- Sidebar -->
     <div class="sidebar">
@@ -283,22 +285,46 @@
         // Sidebar Collapsible Toggle for Tablet/Mobile
         const sidebarToggle = document.getElementById('sidebarToggle');
         const sidebar = document.querySelector('.sidebar');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
         
-        if (sidebarToggle && sidebar) {
+        function toggleSidebarMobile() {
+            if (sidebar) {
+                sidebar.classList.toggle('active');
+                if (sidebarBackdrop) {
+                    sidebarBackdrop.classList.toggle('active', sidebar.classList.contains('active'));
+                }
+            }
+        }
+
+        function closeSidebarMobile() {
+            if (sidebar) {
+                sidebar.classList.remove('active');
+            }
+            if (sidebarBackdrop) {
+                sidebarBackdrop.classList.remove('active');
+            }
+        }
+
+        if (sidebarToggle) {
             sidebarToggle.addEventListener('click', function(e) {
                 e.stopPropagation();
-                sidebar.classList.toggle('active');
-            });
-
-            // Close sidebar when clicking outside on small screens or when collapsed
-            document.addEventListener('click', function(e) {
-                if (window.innerWidth <= 1024 || document.body.classList.contains('sidebar-collapsed')) {
-                    if (sidebar && sidebarToggle && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                        sidebar.classList.remove('active');
-                    }
-                }
+                toggleSidebarMobile();
             });
         }
+
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', function() {
+                closeSidebarMobile();
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth <= 1024 || document.body.classList.contains('sidebar-collapsed')) {
+                if (sidebar && sidebarToggle && !sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+                    closeSidebarMobile();
+                }
+            }
+        });
 
         // Sidebar Collapse/Expand Logic
         const btnCollapseSidebar = document.getElementById('btnCollapseSidebar');

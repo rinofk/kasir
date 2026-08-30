@@ -77,7 +77,7 @@
             </button>
         </div>
         <div class="card-body" id="product-stats-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-responsive table-responsive-card">
                 <table class="table">
                     <thead>
                         <tr>
@@ -109,11 +109,11 @@
                     <tbody>
                         @forelse($productStats as $stat)
                             <tr>
-                                <td style="text-align: center; color: var(--text-secondary);">{{ $loop->iteration }}</td>
-                                <td><code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600;">{{ $stat->code }}</code></td>
-                                <td><strong>{{ $stat->name }}</strong></td>
-                                <td style="text-align: right;">{{ rtrim(rtrim(number_format($stat->total_quantity, 3, ',', '.'), '0'), ',') }} {{ $stat->unit }}</td>
-                                <td style="text-align: right; color: var(--success); font-weight: 600;">Rp {{ number_format($stat->total_profit, 0, ',', '.') }}</td>
+                                <td data-label="No" style="text-align: center; color: var(--text-secondary);">{{ $loop->iteration }}</td>
+                                <td data-label="Kode Barang"><code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600;">{{ $stat->code }}</code></td>
+                                <td data-label="Nama Barang"><strong>{{ $stat->name }}</strong></td>
+                                <td data-label="Jumlah Terjual" style="text-align: right;">{{ rtrim(rtrim(number_format($stat->total_quantity, 3, ',', '.'), '0'), ',') }} {{ $stat->unit }}</td>
+                                <td data-label="Total Keuntungan" style="text-align: right; color: var(--success); font-weight: 600;">Rp {{ number_format($stat->total_profit, 0, ',', '.') }}</td>
                             </tr>
                         @empty
                             <tr>
@@ -138,7 +138,7 @@
             </button>
         </div>
         <div class="card-body" id="transactions-list-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-responsive table-responsive-card">
                 <table class="table">
                     <thead>
                         <tr>
@@ -154,21 +154,21 @@
                     <tbody>
                         @forelse($transactions as $tx)
                             <tr>
-                                <td style="text-align: center; color: var(--text-secondary);">
+                                <td data-label="No" style="text-align: center; color: var(--text-secondary);">
                                     {{ ($transactions->currentPage() - 1) * $transactions->perPage() + $loop->iteration }}
                                 </td>
-                                <td><code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600;">{{ $tx->invoice_number }}</code></td>
-                                <td>{{ $tx->user->name }}</td>
-                                <td>{{ $tx->created_at->format('d M Y, H:i') }}</td>
-                                <td>
+                                <td data-label="Nomor Invoice"><code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600;">{{ $tx->invoice_number }}</code></td>
+                                <td data-label="Kasir">{{ $tx->user->name }}</td>
+                                <td data-label="Tanggal">{{ $tx->created_at->format('d M Y, H:i') }}</td>
+                                <td data-label="Items">
                                     <div style="font-size: 13px; color: var(--text-secondary); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                         @foreach($tx->details as $d)
                                             {{ $d->product_id ? ($d->product->name ?? 'Produk Dihapus') : $d->custom_name }} ({{ (float) $d->quantity }}x),
                                         @endforeach
                                     </div>
                                 </td>
-                                <td><strong>Rp {{ number_format($tx->total_price, 0, ',', '.') }}</strong></td>
-                                <td>
+                                <td data-label="Total Belanja"><strong>Rp {{ number_format($tx->total_price, 0, ',', '.') }}</strong></td>
+                                <td data-label="Aksi">
                                     <div style="display: flex; gap: 8px;">
                                         <a href="{{ route('reports.show', $tx->id) }}" class="btn btn-secondary" style="padding: 6px 10px;" title="Detail Transaksi">
                                             <i class="fa-solid fa-eye"></i> Detail

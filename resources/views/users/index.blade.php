@@ -17,7 +17,7 @@
             </div>
         </div>
         <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-responsive table-responsive-card">
                 <table class="table">
                     <thead>
                         <tr>
@@ -32,9 +32,9 @@
                     <tbody>
                         @forelse($users as $user)
                             <tr>
-                                <td><strong>{{ $user->name }}</strong> @if($user->id === Auth::id()) <span style="font-weight: normal; color: var(--text-secondary);">(Anda)</span> @endif</td>
-                                <td>{{ $user->email }}</td>
-                                <td>
+                                <td data-label="Nama Lengkap"><strong>{{ $user->name }}</strong> @if($user->id === Auth::id()) <span style="font-weight: normal; color: var(--text-secondary);">(Anda)</span> @endif</td>
+                                <td data-label="Email">{{ $user->email }}</td>
+                                <td data-label="Role">
                                     @foreach($user->roles as $role)
                                         @if($role->name === 'admin')
                                             <span class="badge badge-danger">Administrator</span>
@@ -45,15 +45,15 @@
                                         @endif
                                     @endforeach
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     @if($user->is_active)
                                         <span class="badge badge-success">Aktif</span>
                                     @else
                                         <span class="badge badge-danger">Tidak Aktif</span>
                                     @endif
                                 </td>
-                                <td>{{ $user->created_at->format('d M Y') }}</td>
-                                <td>
+                                <td data-label="Tanggal Bergabung">{{ $user->created_at->format('d M Y') }}</td>
+                                <td data-label="Aksi">
                                     <div style="display: flex; gap: 8px;">
                                         <button onclick="openEditModal({{ json_encode($user) }}, '{{ $user->roles->first()->name ?? '' }}')" class="btn btn-secondary" style="padding: 6px 10px;" title="Edit">
                                             <i class="fa-solid fa-pen-to-square"></i>
@@ -76,7 +76,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 32px;">
+                                <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 32px;">
                                     User tidak ditemukan.
                                 </td>
                             </tr>
